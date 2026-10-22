@@ -1,0 +1,18 @@
+{
+  "item.meridian_progression.fragment_scroll": "Tattered Scroll",
+  "item.meridian_progression.gathering_scroll": "Gathering Scroll",
+  "item.meridian_progression.gathering_scroll.description": "Read to learn manual and automatic breathing and unlock gathering.",
+  "item.meridian_progression.middle_jiao_scroll": "Middle Jiao Scroll",
+  "item.meridian_progression.middle_jiao_scroll.description": "Read to unlock the Middle Jiao circuit and its automatic mode.",
+  "message.meridian_progression.gathering_unlocked": "Gathering Scroll complete. Open Breathing in cultivation to practice.",
+  "message.meridian_progression.middle_jiao_unlocked": "Middle Jiao Scroll complete. Open Middle Jiao in cultivation; automatic mode is available.",
+  "item.meridian_progression.fragment_scroll.description": "An old scroll with faded ink. Right-click to read.",
+  "message.meridian_progression.wait_connection": "Waiting for the cultivation progress connection.",
+  "message.meridian_progression.unlocked": "You have finished Qi Meridian Notes. Press I to open cultivation.",
+  "message.meridian_progression.too_early": "The reading ended too soon. Open the scroll and try again.",
+  "message.meridian_progression.invalid_session": "This reading session has expired. Open the scroll again.",
+  "message.meridian_progression.revision_mismatch": "The scroll content versions do not match. Check the installed add-ons.",
+  "message.meridian_progression.transport_error": "The reading result did not reach the server. Open the scroll again.",
+  "screen.meridian_progression.scroll": "Qi Meridian Notes",
+  "screen.meridian_progression.controls": "Hold Space to speed up   Esc to close"
+}

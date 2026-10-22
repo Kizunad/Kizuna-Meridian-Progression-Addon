@@ -1,0 +1,55 @@
+# 构建与验证
+
+## 目录与依赖
+
+| 目录 | 职责 |
+|---|---|
+| shared | 唯一 Protobuf、正文、竖排布局与播放时间规则 |
+| server | 独立于 Minecraft 的阅读会话、进度规则和身体宿主接口 |
+| fabric | 实际 Item、Items/BS3D 登记、战利品、骷髅、服务端路由和 OP 命令 |
+| client | 手卷画面、占位音效、输入意图和服务端进度只读投影 |
+| docs/wiki | 文档唯一编辑来源；README 仅为入口 |
+
+目标为 Java 17、Minecraft 1.20.1、Yarn 1.20.1+build.10、Fabric Loader 0.16.10、Fabric API 0.92.3+1.20.1、Loom 1.6-SNAPSHOT（现有缓存为 1.6.12）、Gradle 8.8、Protobuf 4.36.2。
+
+构建使用同级已构建的 Items、BS3D server、Inventory UI client/server 和 Meridian Framework server JAR。Items 是无模组 ID 的库，编译使用其 named dev JAR，安装时只嵌套一次 remap JAR。运行统一应用 Framework 的完整装配脚本，按 fabric/client 源码模块分别排除自身，并显式提供开发环境所需的纯 Java 库。路径以 [fabric 构建文件](../../fabric/build.gradle) 和 [client 构建文件](../../client/build.gradle) 为准。
+
+## 常规验证
+
+```bash
+./gradlew build
+python3 scripts/check_docs.py
+python3 scripts/check_source_text.py "../Kizuna-remote-session/07-单机流程.md"
+git diff --check
+```
+
+`build` 汇总四模块构建、服务端 JUnit 回归与文档检查；协议生成代码、描述集、测试输出与缓存不入库。安装产物为 fabric 和 client 的 remap JAR；shared 另输出协议 ZIP。仅编译通过不能代表游戏接线完成。
+
+## 自动验收入口
+
+- `./gradlew build`：protoc、四模块编译、Loom 安装 JAR、13 项阅读/正文整体回归和文档检查。
+- `./gradlew :fabric:runGametest`：真实注册表、四箱战利品注入、骷髅携卷与已有副手保护。
+- Human 仓 `:fabric:test`：真实身体事务、未读拒绝、保存恢复、重置和其他身体算子保留进度。
+- Human-UI 仓 `xvfb-run -a ./gradlew :client:runSmoke`：独立整合服完整阅读闭环，然后验证正式内观和 GPU 人中光迹。`PROGRESSION_JOURNEY_OK` 与 `HUMAN_UI_SMOKE_OK` 必须同时出现；测试不通过 OP 旁路替代第一次正常阅读。音效检查使用真实 SoundManager：正常展开、正文重排不重播、低风音量 0.05、Esc 清理及空格加速读完后合拢一次；分别输出 `SCROLL_AUDIO_ESC_OK` 和 `SCROLL_AUDIO_COMPLETE_OK`。
+
+## 本轮实际结果
+
+2026-10-21 残卷降噪：本仓四模块构建、重新执行的 13 项阅读回归与 1 项 GameTest 通过；Human-UI 构建与 3 项回归通过。在独立 WN 目录 `D:/Minecraft/Meridian-Scroll-Audio-20261021` 中运行完整装配，真实拾取右键、正文重排、Esc 取消、正常展开后空格加速读完均通过音效检查，记录到展开和合拢纸声各一次、正文低风 0.05 以及关闭后无残留声源。完整流程同时输出 `CULTIVATION_JOURNEY_OK`、`PROGRESSION_JOURNEY_OK`、`HUMAN_UI_SMOKE_OK`。播放端回环录音中正文约 −64 dBFS；素材半秒 RMS 波动低于 1 dB，循环接缝小于日常采样变化，没有原先的固定周期音量峰。录音、运行日志和测试世界只存于独立验收目录。
+
+2026-10-20：本仓构建、13 项 JUnit 和 1 项 GameTest 通过；十一仓共 431 项整体回归、13 项 GameTest 通过。Human-UI 的完整装配 smoke 同时输出 `PROGRESSION_JOURNEY_OK` 与 `HUMAN_UI_SMOKE_OK`。
+
+真实整合服验证了拾取、右键不消耗、关卷、过早完成拒绝、完整加速阅读、身体解锁、修炼菜单显隐、OP 撤权、旧令牌失效、丢卷后保存重启及死亡重生保持。此流程使用正式阅读界面、真实时间和统一路由；没有替换第一次阅读为 OP 解锁。Human 身体回归补充服务端授权、吐纳撤权与其他玩家隔离。
+
+动画仓尚未交付正式骨架与 `meditate` 资源，因此本次内观 smoke 以开脉会话验证重置，不宣称打坐动画视觉验收完成。窗口、纸张与人中光迹截图在 Human-UI 忽略的 `client/build/smoke/screenshots/`。
+
+## 人工表现验收参考
+
+在 [完整装配](Integration.md) 中检查下列实际交互，不能以绕过必需模块的独立场景代替验收。
+
+1. `/give @s meridian_progression:fragment_scroll`，确认物品不可堆叠、手持右键不消耗、副手显示占位纸片、BS3D 描述正确。
+2. 用 `/loot` 分别生成四个目标表，多轮抽样核实独立池注入；生成普通骷髅抽样确认少数副手带卷，击杀确认必掉。关闭原版 doMobLoot 的行为遵循原版，不作为物品专用规则。
+3. 阅读时确认横向展开、旧纸折痕、竖排从右往左、匀速流动和两种模糊。展开一声纸声，正文只有轻微低风，末尾合拢一声纸声；低风随开合淡入淡出，正文没有每隔数秒明显起伏或接缝。按住/松开空格、改变窗口尺寸不重播纸声、不叠加风声。Esc 关闭立即静音，中途退出不补播合拢声。
+4. 周围保留怪物，确认游戏不暂停、能受到伤害；死亡后关闭并撤销阅读。断线、重生和连接替换清理声音与凭据。
+5. 功能闭环已由上述真实客户端自动验证；可按 [接线清单](Integration.md) 在人工游玩时复核交互手感。
+
+代码遵循单一职责：共享层定义内容与时序、规则层决定是否解锁、宿主适配负责实体与保存边界、客户端只发意图并呈现结果。本轮只建立残卷需要的契约，没有预建后续流程系统。

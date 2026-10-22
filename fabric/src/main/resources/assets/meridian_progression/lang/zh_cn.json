@@ -1,0 +1,19 @@
+{
+  "item.meridian_progression.fragment_scroll": "残卷",
+  "item.meridian_progression.gathering_scroll": "聚气残卷",
+  "item.meridian_progression.gathering_scroll.description": "说明手动与自动吐纳。右键读完后解锁聚气。",
+  "item.meridian_progression.middle_jiao_scroll": "中焦残卷",
+  "item.meridian_progression.middle_jiao_scroll.description": "说明中焦周天、关口、自动与突破。右键读完后解锁中焦。",
+  "message.meridian_progression.gathering_unlocked": "你已读完聚气残卷。到修炼页打开吐纳，可使用自动吐纳。",
+  "message.meridian_progression.middle_jiao_unlocked": "你已读完中焦残卷。到修炼页打开中焦，可勾选自动。",
+  "item.meridian_progression.fragment_scroll.description": "一卷旧纸，墨迹残损。右键展开阅读。",
+  "message.meridian_progression.wait_connection": "请等待修炼进度模块连接就绪。",
+  "message.meridian_progression.unlocked": "你已读完《炁脉札记》。按 I 打开修炼页。",
+  "message.meridian_progression.host_not_connected": "身体进度宿主尚未接线，本次阅读无法保存解锁。",
+  "message.meridian_progression.too_early": "阅读时长不足，请重新展开残卷。",
+  "message.meridian_progression.invalid_session": "阅读会话已失效，请重新展开残卷。",
+  "message.meridian_progression.revision_mismatch": "残卷正文版本不一致，请检查整套装配。",
+  "message.meridian_progression.transport_error": "阅读结果未送达服务器，请重新展开残卷。",
+  "screen.meridian_progression.scroll": "炁脉札记",
+  "screen.meridian_progression.controls": "按住空格加速　Esc 合卷"
+}

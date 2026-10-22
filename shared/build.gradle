@@ -1,0 +1,27 @@
+plugins { id 'com.google.protobuf' }
+
+dependencies { api 'com.google.protobuf:protobuf-java:4.36.2' }
+def descriptor = layout.buildDirectory.file('descriptors/progression-v1.desc')
+protobuf {
+    protoc { artifact = 'com.google.protobuf:protoc:4.36.2' }
+    generateProtoTasks {
+        ofSourceSet('main').configureEach { task ->
+            task.generateDescriptorSet = true
+            task.descriptorSetOptions.path = descriptor.get().asFile.path
+            task.descriptorSetOptions.includeImports = true
+            task.descriptorSetOptions.includeSourceInfo = true
+        }
+    }
+}
+processResources {
+    dependsOn tasks.named('generateProto')
+    from(descriptor) { into 'META-INF/meridian_progression/protocol' }
+}
+tasks.register('protocolZip', Zip) {
+    dependsOn tasks.named('generateProto')
+    archiveClassifier = 'proto'
+    from('src/main/proto')
+    from(descriptor) { into 'descriptors' }
+    from(rootProject.files('LICENSE', 'NOTICE'))
+}
+tasks.named('assemble') { dependsOn tasks.named('protocolZip') }

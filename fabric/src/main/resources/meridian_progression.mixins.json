@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "dev.kizuna.meridian.progression.fabric.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": ["SkeletonScrollMixin"],
+  "injectors": {"defaultRequire": 1}
+}

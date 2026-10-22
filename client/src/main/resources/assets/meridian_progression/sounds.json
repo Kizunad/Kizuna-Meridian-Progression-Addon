@@ -1,0 +1,5 @@
+{
+  "paper_rustle": {"sounds": [{"name": "meridian_progression:paper_rustle", "stream": false}], "subtitle": "subtitles.meridian_progression.paper_rustle"},
+  "paper_close": {"sounds": [{"name": "meridian_progression:paper_close", "stream": false}], "subtitle": "subtitles.meridian_progression.paper_rustle"},
+  "low_wind": {"sounds": [{"name": "meridian_progression:low_wind", "stream": false}], "subtitle": "subtitles.meridian_progression.low_wind"}
+}

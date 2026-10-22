@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "meridian_progression_client",
+  "version": "${version}",
+  "name": "Kizuna's Meridian Progression Addon - Client",
+  "description": "残卷手卷播放与权威修炼进度投影",
+  "authors": ["Kizunad"],
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "environment": "client",
+  "entrypoints": {"kizuna_inventory_ui": ["dev.kizuna.meridian.progression.client.ProgressionClient"]},
+  "depends": {
+    "java": ">=17", "minecraft": "1.20.1", "fabricloader": ">=0.16.10", "fabric-api": "*",
+    "meridian_progression": "*", "meridian_ui": "*", "meridian_human_ui": "*",
+    "meridian_human_host": "*", "kizuna_players_animation": "*", "kizuna_inventory_ui": "*"
+  }
+}

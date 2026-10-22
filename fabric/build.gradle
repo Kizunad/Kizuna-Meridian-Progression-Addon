@@ -1,0 +1,55 @@
+plugins { id 'fabric-loom' }
+
+def codeDirectory = rootProject.projectDir.parentFile
+def itemsJar = new File(codeDirectory, 'Kizuna-Meridian-Items-Addon/build/libs/kizuna-meridian-items-addon-0.1.0-SNAPSHOT.jar')
+def bs3dJar = new File(codeDirectory, 'backpack-and-storage-3D/server/build/libs/backpack-storage-3d-server-0.1.0-SNAPSHOT.jar')
+def inventoryJar = new File(codeDirectory, 'Kizuna-Inventory-UI-Framework/server/build/libs/kizuna-inventory-ui-framework-server-0.1.0-SNAPSHOT.jar')
+def meridianJar = new File(codeDirectory, 'Kizuna-Meridian-Mod-Framework/server/build/libs/kizuna-meridian-mod-framework-server-0.1.0-SNAPSHOT.jar')
+[itemsJar, bs3dJar, inventoryJar, meridianJar].each { artifact ->
+    if (!artifact.isFile()) {
+        throw new GradleException("需要已构建的上游产物：${artifact}")
+    }
+}
+repositories { maven { url = 'https://maven.fabricmc.net/' } }
+dependencies {
+    minecraft 'com.mojang:minecraft:1.20.1'
+    mappings 'net.fabricmc:yarn:1.20.1+build.10:v2'
+    modImplementation 'net.fabricmc:fabric-loader:0.16.10'
+    modImplementation 'net.fabricmc.fabric-api:fabric-api:0.92.3+1.20.1'
+    modImplementation files(bs3dJar, inventoryJar)
+    // Items 没有 Fabric 模组描述，Loom 不会替它重映射；编译用上游的 named 库。
+    compileOnly files(new File(codeDirectory, 'Kizuna-Meridian-Items-Addon/build/devlibs/kizuna-meridian-items-addon-0.1.0-SNAPSHOT-dev.jar'))
+    compileOnly files(meridianJar)
+    // Items 是必需宿主库，没有独立模组 ID；安装产物内嵌一次。
+    include files(itemsJar)
+    implementation project(':server')
+    include project(':server')
+    implementation project(':shared')
+    include project(':shared')
+    include implementation('com.google.protobuf:protobuf-java:4.36.2')
+}
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') { expand version: project.version }
+}
+loom { mods { meridian_progression { sourceSet sourceSets.main } } }
+
+apply from: '../../Kizuna-Meridian-Mod-Framework/scripts/full-assembly.gradle'
+sourceSets {
+    gametest {
+        compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+        runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
+    }
+}
+loom {
+    mods { meridian_progression_test { sourceSet sourceSets.gametest } }
+    runs {
+        gametest {
+            server()
+            source sourceSets.gametest
+            runDir 'build/gametest'
+            vmArg '-Dfabric-api.gametest'
+            vmArg '-Dfabric-api.gametest.report-file=build/gametest-results.xml'
+        }
+    }
+}

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "meridian_progression",
+  "version": "${version}",
+  "name": "Kizuna's Meridian Progression Addon",
+  "description": "单机修炼流程：残卷《炁脉札记》与身体进度宿主",
+  "authors": ["Kizunad"],
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dev.kizuna.meridian.progression.fabric.ProgressionFabric"],
+    "kizuna_inventory_ui_server": ["dev.kizuna.meridian.progression.fabric.ProgressionFabric"]
+  },
+  "mixins": ["meridian_progression.mixins.json"],
+  "depends": {
+    "java": ">=17", "minecraft": "1.20.1", "fabricloader": ">=0.16.10", "fabric-api": "*",
+    "meridian_human_host": "*", "meridian_vanilla_damage": "*", "meridian_vanilla_healing": "*",
+    "kizuna_players_animation": "*", "backpack_storage_3d": "*", "kizuna_inventory_ui_server": "*"
+  }
+}
