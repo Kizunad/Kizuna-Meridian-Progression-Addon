@@ -20,7 +20,7 @@ Progression 当前提供 `installStore`、`publishProgress`、`canCultivate`，�
 - [x] **Human-UI**：通过必装场景接口提供中焦标题和锁定提示；独立 `meridian_ui:practice` 弹窗，读取同一权威进度。普通经脉内观保留选脉与开脉。
 - [x] **依赖声明**：Human 强制依赖 Progression common，UI/Human-UI 强制依赖 Progression client；Framework 客户端库保持内容无关。
 
-服务器仅在首次 `UNLOCKED` 提示“按 I 打开修炼页”；实际权限来自身体，不从提示文本推断。
+服务器在真实右键时写入对应身体字段并立即同步，首次 `OpenedScroll.result=UNLOCKED` 才提示对应功能；播放无需完成，Esc 保留进度。finished 仅返回 `COMPLETED`，不得重新写入权限。实际权限来自身体，不从提示文本推断。
 
 ## 适用端与整套装配
 
@@ -42,7 +42,7 @@ Progression 当前提供 `installStore`、`publishProgress`、`canCultivate`，�
 ## 接线后的验收
 
 - [x] 新玩家出生总量含在途保持 0.36 元；实际客户端隐藏修炼且直接打开被拒绝。Human 回归验证服务端吐纳、内观与开脉授权；旧真元调试可用。
-- [x] 真实拾取与右键后，完整空格加速播放收到一次解锁提示；中途关闭、过早 finished、重置后的旧令牌均不解锁。会话回归另覆盖重开、连接替换与玩家隔离。
+- [x] 真实拾取与右键后立即写入并提示一次；中途关闭或立即 finished 保留权限，重复使用不重复保存或提示。未打开的伪造 finished 与重置后的旧令牌不能授予权限。会话回归另覆盖重开、连接替换与玩家隔离。
 - [x] 实际身体保存解锁，丢弃残卷、保存退出并重启世界、真实死亡并替换玩家实体后仍保持；Human 回归验证邻居进度不受重置影响。
 - [x] OP 重置关闭实际经脉窗口并暂停开脉、释放占用，直接解锁随后恢复入口。Human 回归验证正在吐纳时撤权、旧控制意图拒绝与正常行走保留。
 - [x] 完整客户端/整合服握手和专服 GameTest 通过；四箱战利品、骷髅携卷及已有副手保护由真实注册表 GameTest 验证。音效与画面资源实际加载；审美与听感不以自动化通过代替人工验收，详见 [构建页](Development.md)。

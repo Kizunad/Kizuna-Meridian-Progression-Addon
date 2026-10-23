@@ -7,17 +7,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.LongSupplier;
 
 /** 仅管理临时阅读凭据；持久进度始终归身体宿主，所有调用由宿主线程串行化。 */
 public final class ReadingService {
-    private final LongSupplier clockMs;
     private final Map<UUID, Session> sessions = new HashMap<>();
     private ProgressionStore store;
-
-    public ReadingService(LongSupplier clockMs) {
-        this.clockMs = Objects.requireNonNull(clockMs);
-    }
 
     public void installStore(ProgressionStore store) {
         // 身体宿主每个服务器实例只接一次，避免运行中切换进度来源。
@@ -27,18 +21,20 @@ public final class ReadingService {
         this.store = Objects.requireNonNull(store);
     }
 
-    public OpenScroll open(UUID player, String connection) {
-        // 原札记入口保留明确的内容身份，已有宿主调用语义不变。
+    public OpenedScroll open(UUID player, String connection) {
+        // 原札记入口同样由可信物品右键调用，打开即取得本卷权限。
         return open(player, connection, ScrollKind.QI_NOTES);
     }
 
-    public OpenScroll open(UUID player, String connection, ScrollKind scroll) {
-        // 重开覆盖旧令牌；客户端不能自行开始计时或把上一次阅读拼接到本次。
+    public OpenedScroll open(UUID player, String connection, ScrollKind scroll) {
+        // 只有可信宿主能打开残卷；先验证卷种并持久化，写入失败不能发出成功凭据。
         ScrollContent content = ScrollContent.of(scroll);
+        ReadingResult result = unlock(player, scroll);
         String token = UUID.randomUUID().toString();
-        sessions.put(player, new Session(token, connection, clockMs.getAsLong(), scroll));
-        return OpenScroll.newBuilder().setSessionId(token)
+        sessions.put(player, new Session(token, connection, scroll));
+        OpenScroll message = OpenScroll.newBuilder().setSessionId(token)
                 .setContentRevision(content.revision()).setScroll(scroll).build();
+        return new OpenedScroll(message, result);
     }
 
     public ReadingOutcome handle(UUID player, String connection, ReadingIntent intent) {
@@ -49,11 +45,11 @@ public final class ReadingService {
                 || !session.token.equals(intent.getSessionId())) {
             result = ReadingResult.INVALID_SESSION;
         } else {
-            // 完成、取消和非法动作都结算本凭据，提前请求不能稍后重放解锁。
+            // 播放意图只结束会话，不修改身体进度；重置后旧凭据不能恢复授权。
             sessions.remove(player);
             result = switch (intent.getActionCase()) {
                 case CANCELLED -> ReadingResult.CANCELLED;
-                case FINISHED -> finish(player, session);
+                case FINISHED -> ReadingResult.COMPLETED;
                 case SYNCHRONIZE, ACTION_NOT_SET -> ReadingResult.NOT_ALLOWED;
             };
         }
@@ -64,14 +60,10 @@ public final class ReadingService {
         return outcome.build();
     }
 
-    private ReadingResult finish(UUID player, Session session) {
-        // 时间由服务器单调时钟提供，绝不信任客户端提交的时长或加速状态。
-        long elapsed = clockMs.getAsLong() - session.openedMs;
-        if (elapsed < ScrollContent.of(session.scroll).minimumPlaybackMs()) {
-            return ReadingResult.TOO_EARLY;
-        }
+    private ReadingResult unlock(UUID player, ScrollKind scroll) {
+        // 右键只授予对应卷种；从旧消息构建以保留其他两卷和未知字段。
         var previous = progress(player);
-        boolean read = switch (session.scroll) {
+        boolean read = switch (scroll) {
             case QI_NOTES -> previous.getQiNotesRead();
             case GATHERING -> previous.getGatheringScrollRead();
             case MIDDLE_JIAO -> previous.getMiddleJiaoScrollRead();
@@ -81,7 +73,7 @@ public final class ReadingService {
             return ReadingResult.ALREADY_UNLOCKED;
         }
         var updated = previous.toBuilder();
-        switch (session.scroll) {
+        switch (scroll) {
             case QI_NOTES -> updated.setQiNotesRead(true);
             case GATHERING -> updated.setGatheringScrollRead(true);
             case MIDDLE_JIAO -> updated.setMiddleJiaoScrollRead(true);
@@ -117,5 +109,8 @@ public final class ReadingService {
         sessions.computeIfPresent(player, (id, session) -> session.connection.equals(connection) ? null : session);
     }
 
-    private record Session(String token, String connection, long openedMs, ScrollKind scroll) {}
+    /** 仅供可信宿主发送画面与首次提示；客户端不能上传此结果。 */
+    public record OpenedScroll(OpenScroll message, ReadingResult result) {}
+
+    private record Session(String token, String connection, ScrollKind scroll) {}
 }

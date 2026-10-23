@@ -6,7 +6,7 @@ option java_outer_classname = "ProgressionMessages";
 // 由身体宿主按玩家保存；本仓库不提供第二套进度存档。
 message PlayerProgress {
   uint32 schema_version = 1; // 当前为 1。
-  bool qi_notes_read = 2;
+  bool qi_notes_read = 2; // 对应残卷经服务端确认右键即取得，无须完成播放。
   bool gathering_scroll_read = 3;
   bool middle_jiao_scroll_read = 4;
 }
@@ -41,11 +41,12 @@ enum ReadingResult {
   READING_RESULT_UNSPECIFIED = 0;
   UNLOCKED = 1;
   ALREADY_UNLOCKED = 2;
-  TOO_EARLY = 3;
+  TOO_EARLY = 3 [deprecated = true]; // 保留编号；即时解锁后不再判定最短阅读时间。
   INVALID_SESSION = 4;
   CANCELLED = 5;
   HOST_NOT_CONNECTED = 6;
   NOT_ALLOWED = 7;
+  COMPLETED = 8; // 仅结束播放会话，不授予或撤销权限。
 }
 message ReadingOutcome {
   string session_id = 1;

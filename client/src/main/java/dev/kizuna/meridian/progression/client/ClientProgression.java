@@ -33,7 +33,7 @@ public final class ClientProgression {
     public static void requireCultivation() {
         // 直接窗口工厂也执行检查，不能绕过主菜单的隐藏规则。
         if (!canCultivate()) {
-            throw new IllegalStateException("尚未读完《炁脉札记》或进度未同步");
+            throw new IllegalStateException("请先右键使用《炁脉札记》，并等待进度同步，无须看完");
         }
     }
     public static boolean canGather() {

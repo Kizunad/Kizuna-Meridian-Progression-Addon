@@ -9,7 +9,6 @@ import dev.kizuna.meridian.progression.ScrollContent;
 import dev.kizuna.meridian.progression.pb.ProgressionMessages.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
-import net.minecraft.util.Util;
 import java.util.Set;
 
 /** 不登记额外通道或修炼页，只接入框架的必需消息模块和残卷过场。 */
@@ -53,6 +52,7 @@ public final class ProgressionClient implements ClientModule {
     }
 
     private void receive(ProgressionEvent event) {
+        // 解锁随右键后的 progress 发布；播放完成或取消仅负责关闭对应画面。
         var client = MinecraftClient.getInstance();
         switch (event.getEventCase()) {
             case OPEN -> {
@@ -79,7 +79,6 @@ public final class ProgressionClient implements ClientModule {
                         // 必需宿主接线错误必须暴露，不能以只读或未读状态继续运行。
                         throw new IllegalStateException("修炼进度缺少必需身体宿主");
                     }
-                    case TOO_EARLY -> message("too_early");
                     case INVALID_SESSION, NOT_ALLOWED -> message("invalid_session");
                     default -> { /* 成功提示由服务端只发送一次；取消无需额外提示。 */ }
                 }
@@ -92,7 +91,7 @@ public final class ProgressionClient implements ClientModule {
         if (runtime == null || source != generation) {
             return;
         }
-        // 路由超时使用 Inventory UI tick 的墙钟；正文和服务端阅读判定仍使用单调时间。
+        // 路由超时使用 Inventory UI tick 的墙钟；正文播放另用客户端单调时间。
         runtime.protocol().request(ProgressionProtocol.INTENT, intent, System.currentTimeMillis())
                 .thenAccept(outcome -> {
                     // RESULT 只确认路由受理，解锁以 ProgressionEvent 的权威状态为准。

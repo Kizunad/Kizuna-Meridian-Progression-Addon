@@ -6,23 +6,23 @@
 
 | 契约 | 用途 |
 |---|---|
-| PlayerProgress | 身体内持久进度：schema_version=1，qi_notes_read=2、gathering_scroll_read=3、middle_jiao_scroll_read=4 三个独立字段 |
+| PlayerProgress | 身体内持久进度：schema_version=1，qi_notes_read=2、gathering_scroll_read=3、middle_jiao_scroll_read=4 三个独立字段；真实右键即授予 |
 | ReadingIntent | finished / cancelled / synchronize 互斥意图；客户端不提交时长或解锁值 |
 | OpenScroll | 服务器随机会话 UUID、正文 SHA-256、scroll 卷种；卷种由真实物品决定 |
-| ReadingOutcome | 读完、已解锁、提前、凭据无效、取消或操作不允许；结果带服务端凭据绑定的 scroll |
+| ReadingOutcome | 播放完成 COMPLETED=8、凭据无效、取消或操作不允许；结果带服务端凭据绑定的 scroll。旧 TOO_EARLY=3 弃用保留编号 |
 | ProgressionEvent | open / progress / outcome 的互斥服务端事件 |
 
 使用 Inventory UI Framework 的统一路由：模块 `meridian_progression:reading`，C2S `meridian_progression:intent`，S2C `meridian_progression:event`，版本均为 1，两端能力均 required。不新增 Fabric 网络通道。RESULT 仅表示请求是否受理；解锁只以服务端身体与 progress 事件为准。
 
 ## 服务端判定
 
-服务端真实物品右键创建阅读凭据，并使用单调时钟记时。每个玩家最多一个阅读会话；凭据绑定玩家 UUID、当前统一协议连接和当前玩家实体。客户端从 OpenScroll 才能开始播放，并先校验正文修订。
+服务端真实物品右键核对登记、玩家存活与非旁观状态、统一连接就绪后，立即将对应卷种记入身体，再同步 progress 并发送 OpenScroll。无须看完，也不等待客户端确认。每个玩家最多一个播放会话；凭据绑定玩家 UUID、当前统一协议连接和当前玩家实体。客户端从 OpenScroll 才能开始播放，并先校验正文修订。
 
-收到 finished 后，校验玩家/连接/令牌，结算该令牌，再检查真实已过时长是否达到该卷共享计算的最快完整播放时间。达到后只设置该卷对应身体字段，保留其他两卷与未知字段，随后同步并提示已解锁的功能。客户端完成意图不能指定卷种或替换正文。重复阅读返回 ALREADY_UNLOCKED，不再写入和提示。
+`ReadingService.open` 返回服务端 Java 记录 `OpenedScroll(message, result)`：message 为原有 OpenScroll，result 首次为 UNLOCKED、重复为 ALREADY_UNLOCKED。先成功写入身体才创建凭据，保留其他两卷与未知字段；首次打开提示一次，重复打开不重复写入。此结果仅供可信宿主使用，不是客户端提交的解锁证据。
 
-提前完成、取消或非法动作都会消费匹配凭据；伪造或不同连接的令牌不能影响当前有效凭据。重开从零计时。死亡、旁观、玩家实体替换、断线和 OP 重置撤销凭据，迟到的旧连接清理不能撤销新连接的凭据。会话不落盘、不跨重连延续。
+收到 finished/cancelled 后只校验玩家、连接和令牌，再消费匹配凭据；finished 返回 COMPLETED，cancelled 返回 CANCELLED，二者均不修改身体进度。伪造或不同连接的令牌不能影响当前有效凭据，也不能授予任何卷。重开从头播放。死亡、旁观、玩家实体替换和断线只撤销播放，右键所得权限保留；OP 重置另行撤权并撤销凭据，旧 finished 无法恢复授权。迟到的旧连接清理不能撤销新连接的凭据，会话不落盘、不跨重连延续。
 
-这是设计指定的最短时长校验，不能证明客户端确实看过每一字；客户端按共享时间播放，服务器不接受客户端自报时间。
+正文 SHA 继续校验播放资源一致性；最快播放时间只属于客户端表现，不再是服务器解锁门槛。消息字段编号、身体 schema 和统一路由版本保持；新增 COMPLETED 枚举不复用旧编号，适用端整套更新。
 
 ## 身体接口
 

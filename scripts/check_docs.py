@@ -3,6 +3,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import struct
 from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -46,6 +47,25 @@ def check():
                     raise ValueError(f"缺少入口实现：{entry}")
     for resource in resources:
         json.loads(resource.read_text(encoding="utf-8"))
+    # 美术是必需资源：模型引用、PNG 尺寸和三卷独立图像一起校验，防止漏装或错绑。
+    for category, module, folder, names, dimensions in (
+        ("背景", "client", "gui/scroll", ("qi_notes", "gathering", "middle_jiao"), (1536, 1024)),
+        ("图标", "fabric", "item", ("fragment_scroll", "gathering_scroll", "middle_jiao_scroll"), (32, 32)),
+    ):
+        checksums = set()
+        assets = ROOT / module / "src/main/resources/assets/meridian_progression"
+        for name in names:
+            path = assets / "textures" / folder / f"{name}.png"
+            data = path.read_bytes()
+            if data[:8] != b"\x89PNG\r\n\x1a\n" or struct.unpack(">II", data[16:24]) != dimensions:
+                raise ValueError(f"{category}尺寸或格式无效：{path}")
+            checksums.add(hashlib.sha256(data).hexdigest())
+            if category == "图标":
+                model = json.loads((assets / "models/item" / f"{name}.json").read_text(encoding="utf-8"))
+                if model["textures"]["layer0"] != f"meridian_progression:item/{name}":
+                    raise ValueError(f"图标引用错误：{name}")
+        if len(checksums) != len(names):
+            raise ValueError(f"三卷{category}必须分别生成，不能复用同一图片")
     audio = ROOT / "client/src/main/resources/assets/meridian_progression"
     sounds = json.loads((audio / "sounds.json").read_text(encoding="utf-8"))
     for definition in sounds.values():

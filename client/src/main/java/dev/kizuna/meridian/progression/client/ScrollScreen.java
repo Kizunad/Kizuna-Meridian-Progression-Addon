@@ -1,5 +1,6 @@
 package dev.kizuna.meridian.progression.client;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import dev.kizuna.meridian.progression.ScrollContent;
 import dev.kizuna.meridian.progression.ScrollPlayback;
 import dev.kizuna.meridian.progression.pb.ProgressionMessages.*;
@@ -8,6 +9,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
+import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 import java.util.function.Consumer;
 
@@ -17,10 +19,13 @@ public final class ScrollScreen extends Screen {
     private static final int LOGICAL_HEIGHT = 270;
     private static final int TEXT_LEFT = 56;
     private static final int TEXT_RIGHT = TEXT_LEFT + ScrollContent.VIEW_COLUMNS * ScrollContent.COLUMN_PITCH;
+    private static final int BACKGROUND_WIDTH = 1536;
+    private static final int BACKGROUND_HEIGHT = 1024;
     private final String sessionId;
     private final Consumer<ReadingIntent> outbound;
     private final ScrollContent content;
     private final ScrollPlayback playback;
+    private final Identifier background;
     private long lastFrameMs = Util.getMeasuringTimeMs();
     private boolean terminal;
     private ScrollAudio audio;
@@ -32,11 +37,22 @@ public final class ScrollScreen extends Screen {
 
     public ScrollScreen(String sessionId, ScrollContent content, Consumer<ReadingIntent> outbound) {
         super(Text.translatable("screen.meridian_progression.scroll"));
-        // 正文与播放时间来自同一个对象，不能混用另一卷的最快时长。
+        // 正文、播放时序与生成背景按同一卷绑定；播放本身不再决定解锁。
         this.sessionId = sessionId;
         this.content = content;
         this.playback = new ScrollPlayback(content);
         this.outbound = outbound;
+        String texture;
+        if (content == ScrollContent.QI_NOTES) {
+            texture = "qi_notes";
+        } else if (content == ScrollContent.GATHERING) {
+            texture = "gathering";
+        } else if (content == ScrollContent.MIDDLE_JIAO) {
+            texture = "middle_jiao";
+        } else {
+            throw new IllegalArgumentException("残卷缺少对应背景");
+        }
+        this.background = new Identifier("meridian_progression", "textures/gui/scroll/" + texture + ".png");
     }
 
     public String sessionId() { return sessionId; }
@@ -55,6 +71,7 @@ public final class ScrollScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        // 画面按单调时间推进；展开裁切和缩放不改变正文或生成纹理的比例。
         long now = Util.getMeasuringTimeMs();
         boolean fast = client.isWindowFocused()
                 && InputUtil.isKeyPressed(client.getWindow().getHandle(), GLFW.GLFW_KEY_SPACE);
@@ -81,7 +98,10 @@ public final class ScrollScreen extends Screen {
         matrices.scale(scale, scale, 1);
         int left = Math.round(210 - 186 * open);
         int right = Math.round(210 + 186 * open);
-        parchment(context, left, right, open);
+        context.enableScissor(Math.round(originX + left * scale), Math.round(originY + 8 * scale),
+                Math.round(originX + right * scale), Math.round(originY + 250 * scale));
+        parchment(context, open);
+        context.disableScissor();
         // Scissor 使用屏幕坐标，裁切同时覆盖手卷展开边缘与固定文字视口。
         if (right - left > 8) {
             context.enableScissor(Math.round(originX + Math.max(left + 4, TEXT_LEFT) * scale),
@@ -109,26 +129,23 @@ public final class ScrollScreen extends Screen {
         }
     }
 
-    private void parchment(DrawContext context, int left, int right, float alpha) {
-        // 程序化旧纸是本轮占位美术；折痕固定，不随帧随机闪烁。
-        context.fill(left + 3, 15, right + 3, 249, color(0x000000, alpha * 0.35f));
-        context.fill(left, 12, right, 246, color(0xD0B987, alpha));
-        context.fill(left + 3, 16, right - 3, 242, color(0xDDCCA4, alpha));
-        for (int x = left + 12; x < right - 4; x += 27) {
-            context.fill(x, 17, x + 1, 241, color(0x806A45, alpha * 0.12f));
-            context.fill(x + 1, 17, x + 2, 241, color(0xF6E7BD, alpha * 0.24f));
+    private void parchment(DrawContext context, float alpha) {
+        // 纸面、卷边和纹样全部来自本卷生成图，只做展开裁切与淡入淡出。
+        var matrices = context.getMatrices();
+        matrices.push();
+        matrices.translate(24, 8, 0);
+        matrices.scale(372.0f / BACKGROUND_WIDTH, 242.0f / BACKGROUND_HEIGHT, 1);
+        RenderSystem.enableBlend();
+        RenderSystem.setShaderColor(1, 1, 1, alpha);
+        try {
+            context.drawTexture(background, 0, 0, 0, 0,
+                    BACKGROUND_WIDTH, BACKGROUND_HEIGHT, BACKGROUND_WIDTH, BACKGROUND_HEIGHT);
+        } finally {
+            // 后续文字和其他界面不能继承背景透明度或矩阵。
+            RenderSystem.setShaderColor(1, 1, 1, 1);
+            RenderSystem.disableBlend();
+            matrices.pop();
         }
-        for (int i = 0; i < 100; i++) {
-            int x = 26 + Math.floorMod(i * 73, 365);
-            int y = 18 + Math.floorMod(i * 31, 220);
-            if (x > left + 4 && x < right - 4) {
-                context.fill(x, y, x + 2, y + 1, color(0x786242, alpha * 0.14f));
-            }
-        }
-        context.fill(left - 5, 8, left + 4, 250, color(0x725234, alpha));
-        context.fill(right - 4, 8, right + 5, 250, color(0x725234, alpha));
-        context.fill(left - 3, 10, left, 248, color(0xAC895B, alpha));
-        context.fill(right - 2, 10, right + 1, 248, color(0xAC895B, alpha));
     }
 
     private void glyph(DrawContext context, ScrollContent.Glyph glyph, int x, int y, int column, int row, float alpha) {

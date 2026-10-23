@@ -19,7 +19,6 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import net.minecraft.util.Util;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.*;
@@ -139,7 +138,7 @@ public final class ProgressionFabric implements ModInitializer, FabricServerModu
     }
 
     private static final class Runtime {
-        final ReadingService service = new ReadingService(Util::getMeasuringTimeMs);
+        final ReadingService service = new ReadingService();
         final Set<ReadingSession> sessions = new HashSet<>();
     }
 
@@ -160,17 +159,28 @@ public final class ProgressionFabric implements ModInitializer, FabricServerModu
         }
 
         void open(ServerPlayerEntity player, ScrollKind scroll) {
-            // 新卷覆盖旧凭据，不能把其他卷的已播放时间挪用到本卷。
+            // 真实右键先写身体并同步权限，阅读画面及后续关闭不影响解锁事实。
             invalidate();
             playerId = player.getUuid();
             readingPlayer = player;
             var open = runtime.service.open(playerId, connection.id(), scroll);
-            token = open.getSessionId();
-            send(ProgressionEvent.newBuilder().setOpen(open).build());
+            token = open.message().getSessionId();
+            synchronize();
+            send(ProgressionEvent.newBuilder().setOpen(open.message()).build());
+            if (open.result() == ReadingResult.UNLOCKED) {
+                String message = switch (scroll) {
+                    case QI_NOTES -> "unlocked";
+                    case GATHERING -> "gathering_unlocked";
+                    case MIDDLE_JIAO -> "middle_jiao_unlocked";
+                    default -> throw new IllegalStateException("解锁结果缺少残卷类型");
+                };
+                player.sendMessage(Text.translatable("message.meridian_progression." + message), false);
+            }
         }
 
         @Override
         public boolean handle(ServerRequest<ServerPlayerEntity> request) {
+            // 客户端只能同步投影或结束当前播放，不能通过 finished 授予权限。
             var player = connection.context();
             playerId = player.getUuid();
             var intent = request.payload(ReadingIntent.getDefaultInstance());
@@ -190,20 +200,7 @@ public final class ProgressionFabric implements ModInitializer, FabricServerModu
                 readingPlayer = null;
             }
             send(ProgressionEvent.newBuilder().setOutcome(result).build());
-            if (result.getResult() == ReadingResult.UNLOCKED || result.getResult() == ReadingResult.ALREADY_UNLOCKED) {
-                synchronize();
-                if (result.getResult() == ReadingResult.UNLOCKED) {
-                    String message = switch (result.getScroll()) {
-                        case QI_NOTES -> "unlocked";
-                        case GATHERING -> "gathering_unlocked";
-                        case MIDDLE_JIAO -> "middle_jiao_unlocked";
-                        default -> throw new IllegalStateException("解锁结果缺少残卷类型");
-                    };
-                    player.sendMessage(Text.translatable("message.meridian_progression." + message), false);
-                }
-                return true;
-            }
-            return result.getResult() == ReadingResult.CANCELLED;
+            return result.getResult() == ReadingResult.COMPLETED || result.getResult() == ReadingResult.CANCELLED;
         }
 
         void synchronize() {
