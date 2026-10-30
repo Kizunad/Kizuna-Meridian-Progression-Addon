@@ -14,9 +14,9 @@ include 'shared', 'server', 'fabric', 'client'
 
 // 上游尚未发布坐标；按清单目录组合独立仓库的实际工程，不复制源码或协议。
 kizunaWorkspace.includeSource('framework', [server: 'local.meridian:server'])
-kizunaWorkspace.includeSource('bs3d', [server: 'local.bs3d:server'])
-// Inventory UI 的替换键用其工程自身的 group 与工程名，与 Human 等仓的登记一致：同一仓库在嵌套组合里只按最先登记的规则替换，键不一致时另一方解析不到。
+// 替换键一律用各工程自身的 group 与工程名，与 Human 等仓的登记一致：同一仓库在嵌套组合里只按最先登记的规则替换，键不一致时另一方解析不到。
+kizunaWorkspace.includeSource('bs3d', [server: 'dev.kizuna.backpack3d:server'])
 kizunaWorkspace.includeSource('inventory-ui', ['': 'dev.kizuna.inventoryui:kizuna-inventory-ui-framework', server: 'dev.kizuna.inventoryui:server'])
 // Items 宿主库要嵌进 common 安装 JAR，Loom 1.13 只嵌套模块组件，不能再嵌文件。
 // 同一仓库被多处组合时只采用最先登记的替换规则；Items 自身只组合 Inventory UI server，必须排在 Inventory UI 之后。
-kizunaWorkspace.includeSource('items', ['': 'local.items:items'])
+kizunaWorkspace.includeSource('items', ['': 'dev.kizuna.meridian.items:kizuna-meridian-items-addon'])
