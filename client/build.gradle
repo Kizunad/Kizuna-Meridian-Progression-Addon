@@ -7,7 +7,7 @@ dependencies {
     modImplementation libs.fabric.loader
     modImplementation libs.fabric.api
     // Inventory UI 客户端以源码组合，编译取 named 开发 JAR；开发运行由完整装配按替换坐标装入。
-    compileOnly('local.inventory-ui:client') { targetConfiguration = 'namedElements' }
+    compileOnly('dev.kizuna.inventoryui:kizuna-inventory-ui-framework') { targetConfiguration = 'namedElements' }
     implementation project(':shared')
     testImplementation libs.junit4
 }

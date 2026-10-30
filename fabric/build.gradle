@@ -9,7 +9,7 @@ dependencies {
     // 组合进来的 Loom 工程编译取 named 开发 JAR（上游随本仓先行构建）；Items 没有 Fabric 模组描述，同样直接用 named 库。
     // 开发运行时这些模块由完整装配按替换坐标装入，这里不再声明第二份。
     compileOnly('local.bs3d:server') { targetConfiguration = 'namedElements' }
-    compileOnly('local.inventory-ui:server') { targetConfiguration = 'namedElements' }
+    compileOnly('dev.kizuna.inventoryui:server') { targetConfiguration = 'namedElements' }
     compileOnly('local.items:items') { targetConfiguration = 'namedElements' }
     compileOnly 'local.meridian:server'
     // Items 是必需宿主库，没有独立模组 ID；安装产物内嵌一次。
