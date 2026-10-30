@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def check():
-    # 文档与三卷实际资源一起校验，避免新卷正文更改后遗留旧摘要。
+    # 文档与四卷实际资源一起校验，避免新卷正文更改后遗留旧摘要。
     wiki = ROOT / "docs/wiki"
     required = {"Home", "Scroll", "Protocol", "Integration", "Development", "_Sidebar"}
     pages = sorted(wiki.glob("*.md"))
@@ -30,7 +30,7 @@ def check():
                 linked = (path.parent / unquote(parsed.path)).resolve()
                 if not linked.is_relative_to(ROOT) or not linked.exists():
                     raise ValueError(f"文档链接失效：{path}: {target}")
-    for name in ("qi-notes", "gathering", "middle-jiao"):
+    for name in ("qi-notes", "inner-vision", "gathering", "middle-jiao"):
         body = ROOT / "shared/src/main/resources/meridian_progression" / f"{name}.txt"
         revision = hashlib.sha256(body.read_bytes()).hexdigest()
         if revision not in (wiki / "Scroll.md").read_text(encoding="utf-8"):
@@ -47,10 +47,11 @@ def check():
                     raise ValueError(f"缺少入口实现：{entry}")
     for resource in resources:
         json.loads(resource.read_text(encoding="utf-8"))
-    # 美术是必需资源：模型引用、PNG 尺寸和三卷独立图像一起校验，防止漏装或错绑。
+    # 美术是必需资源：模型引用、PNG 尺寸和四卷独立图像一起校验，防止漏装或错绑。
     for category, module, folder, names, dimensions in (
-        ("背景", "client", "gui/scroll", ("qi_notes", "gathering", "middle_jiao"), (1536, 1024)),
-        ("图标", "fabric", "item", ("fragment_scroll", "gathering_scroll", "middle_jiao_scroll"), (32, 32)),
+        ("背景", "client", "gui/scroll", ("qi_notes", "inner_vision", "gathering", "middle_jiao"), (1536, 1024)),
+        ("图标", "fabric", "item",
+         ("fragment_scroll", "inner_vision_scroll", "gathering_scroll", "middle_jiao_scroll"), (32, 32)),
     ):
         checksums = set()
         assets = ROOT / module / "src/main/resources/assets/meridian_progression"
@@ -65,7 +66,7 @@ def check():
                 if model["textures"]["layer0"] != f"meridian_progression:item/{name}":
                     raise ValueError(f"图标引用错误：{name}")
         if len(checksums) != len(names):
-            raise ValueError(f"三卷{category}必须分别生成，不能复用同一图片")
+            raise ValueError(f"四卷{category}必须分别生成，不能复用同一图片")
     audio = ROOT / "client/src/main/resources/assets/meridian_progression"
     sounds = json.loads((audio / "sounds.json").read_text(encoding="utf-8"))
     for definition in sounds.values():

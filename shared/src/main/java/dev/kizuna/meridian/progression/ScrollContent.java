@@ -22,6 +22,7 @@ public final class ScrollContent {
     public static final ScrollContent QI_NOTES = load("qi-notes.txt");
     public static final ScrollContent GATHERING = load("gathering.txt");
     public static final ScrollContent MIDDLE_JIAO = load("middle-jiao.txt");
+    public static final ScrollContent INNER_VISION = load("inner-vision.txt");
 
     private final String text;
     private final String revision;
@@ -88,6 +89,7 @@ public final class ScrollContent {
             case QI_NOTES -> QI_NOTES;
             case GATHERING -> GATHERING;
             case MIDDLE_JIAO -> MIDDLE_JIAO;
+            case INNER_VISION -> INNER_VISION;
             default -> throw new IllegalArgumentException("未知残卷类型：" + kind);
         };
     }

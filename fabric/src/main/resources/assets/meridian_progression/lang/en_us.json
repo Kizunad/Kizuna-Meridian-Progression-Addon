@@ -1,4 +1,8 @@
 {
+  "itemGroup.meridian_progression.progression": "Cultivation",
+  "item.meridian_progression.inner_vision_scroll": "Scroll of Inner Vision",
+  "item.meridian_progression.inner_vision_scroll.description": "Learn to look inward with closed eyes. Right-click to unlock Inner Vision. Reading is optional.",
+  "message.meridian_progression.inner_vision_unlocked": "Inner Vision unlocked. Open Body → Inspect in the cultivation page to look within.",
   "item.meridian_progression.fragment_scroll": "Tattered Scroll",
   "item.meridian_progression.gathering_scroll": "Gathering Scroll",
   "item.meridian_progression.gathering_scroll.description": "Right-click to unlock gathering and automatic breathing. Reading is optional.",

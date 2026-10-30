@@ -2,8 +2,14 @@ package dev.kizuna.meridian.progression.server;
 
 import dev.kizuna.meridian.progression.ProgressionProtocol;
 import dev.kizuna.meridian.progression.ScrollContent;
-import dev.kizuna.meridian.progression.pb.ProgressionMessages.*;
+import dev.kizuna.meridian.progression.pb.ProgressionMessages.OpenScroll;
+import dev.kizuna.meridian.progression.pb.ProgressionMessages.PlayerProgress;
+import dev.kizuna.meridian.progression.pb.ProgressionMessages.ReadingIntent;
+import dev.kizuna.meridian.progression.pb.ProgressionMessages.ReadingOutcome;
+import dev.kizuna.meridian.progression.pb.ProgressionMessages.ReadingResult;
+import dev.kizuna.meridian.progression.pb.ProgressionMessages.ScrollKind;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -32,8 +38,11 @@ public final class ReadingService {
         ReadingResult result = unlock(player, scroll);
         String token = UUID.randomUUID().toString();
         sessions.put(player, new Session(token, connection, scroll));
-        OpenScroll message = OpenScroll.newBuilder().setSessionId(token)
-                .setContentRevision(content.revision()).setScroll(scroll).build();
+        OpenScroll message = OpenScroll.newBuilder()
+                .setSessionId(token)
+                .setContentRevision(content.revision())
+                .setScroll(scroll)
+                .build();
         return new OpenedScroll(message, result);
     }
 
@@ -61,24 +70,20 @@ public final class ReadingService {
     }
 
     private ReadingResult unlock(UUID player, ScrollKind scroll) {
-        // 右键只授予对应卷种；从旧消息构建以保留其他两卷和未知字段。
+        // 右键只授予对应卷种；从旧消息构建以保留其他卷和未知字段。
         var previous = progress(player);
         boolean read = switch (scroll) {
             case QI_NOTES -> previous.getQiNotesRead();
             case GATHERING -> previous.getGatheringScrollRead();
             case MIDDLE_JIAO -> previous.getMiddleJiaoScrollRead();
+            case INNER_VISION -> previous.getInnerVisionScrollRead();
             default -> throw new IllegalStateException("阅读会话卷种无效");
         };
         if (read) {
             return ReadingResult.ALREADY_UNLOCKED;
         }
         var updated = previous.toBuilder();
-        switch (scroll) {
-            case QI_NOTES -> updated.setQiNotesRead(true);
-            case GATHERING -> updated.setGatheringScrollRead(true);
-            case MIDDLE_JIAO -> updated.setMiddleJiaoScrollRead(true);
-            default -> throw new IllegalStateException("阅读会话卷种无效");
-        }
+        applyScroll(updated, scroll, ProgressChange.UNLOCK);
         store.write(player, updated.build());
         return ReadingResult.UNLOCKED;
     }
@@ -95,14 +100,42 @@ public final class ReadingService {
         return value;
     }
 
-    public PlayerProgress setUnlocked(UUID player, boolean unlocked) {
+    public PlayerProgress changeAll(UUID player, ProgressChange change) {
         // OP 重置先撤销旧阅读凭据，防止屏幕关闭后旧完成请求恢复解锁。
         sessions.remove(player);
-        var value = progress(player).toBuilder().setQiNotesRead(unlocked)
-                .setGatheringScrollRead(unlocked).setMiddleJiaoScrollRead(unlocked).build();
+        var updated = progress(player).toBuilder();
+        for (var scroll : List.of(ScrollKind.QI_NOTES, ScrollKind.INNER_VISION,
+                ScrollKind.GATHERING, ScrollKind.MIDDLE_JIAO)) {
+            applyScroll(updated, scroll, change);
+        }
+        var value = updated.build();
         store.write(player, value);
         return value;
     }
+
+    public PlayerProgress changeScroll(UUID player, ScrollKind scroll, ProgressChange change) {
+        // 单卷操作保留其他进度，同时使旧阅读凭据失效。
+        var updated = progress(player).toBuilder();
+        applyScroll(updated, scroll, change);
+        sessions.remove(player);
+        var value = updated.build();
+        store.write(player, value);
+        return value;
+    }
+
+    private static void applyScroll(PlayerProgress.Builder progress, ScrollKind scroll, ProgressChange change) {
+        // 统一修改卷种字段，避免整组命令与阅读路径漏掉新卷。
+        boolean unlocked = Objects.requireNonNull(change) == ProgressChange.UNLOCK;
+        switch (scroll) {
+            case QI_NOTES -> progress.setQiNotesRead(unlocked);
+            case GATHERING -> progress.setGatheringScrollRead(unlocked);
+            case MIDDLE_JIAO -> progress.setMiddleJiaoScrollRead(unlocked);
+            case INNER_VISION -> progress.setInnerVisionScrollRead(unlocked);
+            default -> throw new IllegalArgumentException("阅读会话卷种无效");
+        }
+    }
+
+    public enum ProgressChange { UNLOCK, RESET }
 
     public void forget(UUID player, String connection) {
         // 旧连接的迟到清理不能清除玩家重连后新建的阅读。

@@ -1,6 +1,6 @@
 # 跨仓接线与验收
 
-三卷授权独立：札记解锁修炼页及开脉，聚气卷控制吐纳，中焦卷控制周天、冲关、动员及突破。中焦卷同时授权自动，无八次手动成功门槛。Human 在普通网络入口直接读取身体进度；OP 重置经过既有宿主，立即停活动、归还在途并解除占用。Human-UI 完整单机验收串联三卷真实阅读、自动吐纳与周天、保存重启和重生，不新增平行进度账户。
+四卷授权独立：札记解锁修炼页及开脉，内观卷控制整个检视窗口和内部订阅，聚气卷控制吐纳，中焦卷控制周天、冲关、动员及突破。中焦卷同时授权自动，无八次手动成功门槛。Human 在普通网络入口直接读取身体进度；OP 重置经过既有宿主。单独重置内观只撤销该窗口与订阅，整组重置再停止主动活动、归还在途并解除占用。不新增平行进度账户。
 
 本轮在保留密度模型的基础上接通残卷解锁。Framework 保存通用进度，Human 绑定实际身体，Progression 定义阅读规则，UI 使用权威投影控制入口。以下均为必需接线，没有缺包替代流程。
 
@@ -9,14 +9,14 @@
 - [x] **Framework**：`BodySnapshot.addon_progress = 16` 与可信 `SetAddonProgress = 28`，保留身体 schema 3 的密度语义。普通网络拒绝写入，事务校验只改变指定项和 revision。
 - [x] **Human fabric**：实现 `ProgressionStore`，在身体 `meridian_progression:progress` 保存 `PlayerProgress` Any。无该项时初始化版本 1、未读；死亡与同 UUID 实体替换保留事实。调用可信事务并标脏，无独立存档。旧密度 schema 的迁移仍不在本轮范围。
 - [x] **生命周期**：每次 `SERVER_STARTING` 安装该服务器的适配器；JOIN 先载入身体，READY 同步进度；重生重新发布；`SERVER_STOPPED` 清除运行时。
-- [x] **服务端授权**：吐纳要求札记与聚气卷，开脉要求札记；中焦要求札记与中焦卷。内观 `BodyViewRequest` 检查 `canCultivate`。未授权返回 `ACCESS_DENIED`，中焦网络给出找卷提示。重置串行停止吐纳、暂停开脉、解除占用、停止动画并撤销内观订阅。
+- [x] **服务端授权**：吐纳要求札记与聚气卷，开脉要求札记；中焦要求札记与中焦卷。内观 `BodyViewRequest` 检查身体归属、札记和内观卷。未授权返回 `ACCESS_DENIED`，中焦网络给出找卷提示。整组重置串行停止吐纳、暂停开脉、解除占用、停止动画并撤销内观订阅；单卷重置只撤内观。
 - [x] **自然身体与 OP**：出生 0.36 元、自然扩散和运动不受阅读门槛影响；原真元调试与新的解锁/重置均保留。
 
-Progression 当前提供 `installStore`、`publishProgress`、`canCultivate`，详见 [协议](Protocol.md)。本轮没有读取/反射访问 Human 私有世界状态，也没有在本仓库建立独立持久账本。
+Progression 当前提供 `installStore`、`publishProgress`、`canCultivate`、`canInspect`，详见 [协议](Protocol.md)。没有读取/反射访问 Human 私有世界状态，也没有在本仓库建立独立持久账本。
 
 ## 客户端 UI
 
-- [x] **UI**：使用 `ClientProgression`，由 Inventory UI 的通用 `featureAccess` 同时隐藏菜单并阻止直接打开；窗口工厂再次检查。断线清空投影，释放在客户端线程执行。
+- [x] **UI**：使用 `ClientProgression`，主动修炼入口由 `featureAccess` 校验；检视入口始终可见，工厂用 `canInspect()` 返回锁定通知或真实面板。进度变化关闭旧状态窗口，重置立即释放检视并发送撤订阅。断线清空投影，释放在客户端线程执行。
 - [x] **Human-UI**：通过必装场景接口提供中焦标题和锁定提示；独立 `meridian_ui:practice` 弹窗，读取同一权威进度。普通经脉内观保留选脉与开脉。
 - [x] **依赖声明**：Human 强制依赖 Progression common，UI/Human-UI 强制依赖 Progression client；Framework 客户端库保持内容无关。
 

@@ -32,5 +32,5 @@ subprojects {
 
 tasks.named('assemble') { dependsOn subprojects.collect { "${it.path}:assemble" } }
 tasks.named('check') { dependsOn subprojects.collect { "${it.path}:check" }, 'checkDocs' }
-tasks.register('test') { dependsOn ':server:test' }
+tasks.register('test') { dependsOn ':server:test', ':client:test' }
 tasks.register('checkDocs', Exec) { commandLine 'python3', 'scripts/check_docs.py' }

@@ -3,5 +3,8 @@
   "id": "meridian_progression_test",
   "version": "1.0.0",
   "environment": "server",
-  "entrypoints": {"fabric-gametest": ["dev.kizuna.meridian.progression.fabric.ProgressionGameTest"]}
+  "entrypoints": {"fabric-gametest": [
+    "dev.kizuna.meridian.progression.fabric.ProgressionGameTest",
+    "dev.kizuna.meridian.progression.fabric.ProgressionCreativeGameTest"
+  ]}
 }

@@ -1,14 +1,22 @@
 package dev.kizuna.meridian.progression.fabric;
 
 import com.google.protobuf.Message;
-import dev.kizuna.inventoryui.server.*;
+import dev.kizuna.inventoryui.server.ServerModuleRegistry;
+import dev.kizuna.inventoryui.server.ServerModuleSession;
+import dev.kizuna.inventoryui.server.ServerConnection;
+import dev.kizuna.inventoryui.server.ServerRequest;
 import dev.kizuna.inventoryui.server.fabric.FabricServerModule;
 import dev.kizuna.inventoryui.protocol.pb.WireProtocol.Capability;
 import dev.kizuna.inventoryui.protocol.pb.WireProtocol.Direction;
 import dev.kizuna.meridian.progression.ProgressionProtocol;
-import dev.kizuna.meridian.progression.pb.ProgressionMessages.*;
+import dev.kizuna.meridian.progression.pb.ProgressionMessages.ReadingIntent;
+import dev.kizuna.meridian.progression.pb.ProgressionMessages.ReadingOutcome;
+import dev.kizuna.meridian.progression.pb.ProgressionMessages.ReadingResult;
+import dev.kizuna.meridian.progression.pb.ProgressionMessages.ProgressionEvent;
+import dev.kizuna.meridian.progression.pb.ProgressionMessages.ScrollKind;
 import dev.kizuna.meridian.progression.server.ProgressionStore;
 import dev.kizuna.meridian.progression.server.ReadingService;
+import dev.kizuna.meridian.progression.server.ReadingService.ProgressChange;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -20,15 +28,26 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import java.util.*;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 
 /** 物品和协议的服务端宿主；身体保存与修炼拦截由协作清单中的必需接线完成。 */
 public final class ProgressionFabric implements ModInitializer, FabricServerModule {
     private static final Map<MinecraftServer, Runtime> RUNTIMES = new IdentityHashMap<>();
+    private static final int OP_PERMISSION_LEVEL = 2;
+
+    private enum ProgressTarget { ALL, INNER_VISION }
 
     @Override
     public void onInitialize() {
+        // 先注册真实内容，再把命令与连接生命周期接到同一权威阅读服务。
         ProgressionItems.register();
         ScrollAcquisition.registerLoot();
         ServerLifecycleEvents.SERVER_STOPPED.register(RUNTIMES::remove);
@@ -40,26 +59,41 @@ public final class ProgressionFabric implements ModInitializer, FabricServerModu
         });
         CommandRegistrationCallback.EVENT.register((dispatcher, access, environment) ->
                 dispatcher.register(CommandManager.literal("meridian")
-                        .then(CommandManager.literal("progression").requires(source -> source.hasPermissionLevel(2))
-                                .then(command("unlock", true)).then(command("reset", false)))));
+                        .then(CommandManager.literal("progression")
+                                .requires(source -> source.hasPermissionLevel(OP_PERMISSION_LEVEL))
+                                .then(command("unlock", ProgressChange.UNLOCK))
+                                .then(command("reset", ProgressChange.RESET)))));
     }
 
-    private static com.mojang.brigadier.builder.LiteralArgumentBuilder<ServerCommandSource> command(
-            String name, boolean unlocked) {
+    private static LiteralArgumentBuilder<ServerCommandSource> command(String name, ProgressChange change) {
+        // 原整组语法保持可用，单卷字面子命令不会被误当成玩家名。
         return CommandManager.literal(name)
-                .executes(context -> change(context, List.of(context.getSource().getPlayerOrThrow()), unlocked))
+                .executes(context -> change(context, List.of(context.getSource().getPlayerOrThrow()),
+                        change, ProgressTarget.ALL))
                 .then(CommandManager.argument("players", EntityArgumentType.players())
-                        .executes(context -> change(context, EntityArgumentType.getPlayers(context, "players"), unlocked)));
+                        .executes(context -> change(context, EntityArgumentType.getPlayers(context, "players"),
+                                change, ProgressTarget.ALL)))
+                .then(CommandManager.literal("inner_vision")
+                        .executes(context -> change(context, List.of(context.getSource().getPlayerOrThrow()),
+                                change, ProgressTarget.INNER_VISION))
+                        .then(CommandManager.argument("players", EntityArgumentType.players())
+                                .executes(context -> change(context, EntityArgumentType.getPlayers(context, "players"),
+                                        change, ProgressTarget.INNER_VISION))));
     }
 
     private static int change(CommandContext<ServerCommandSource> context,
-            Collection<ServerPlayerEntity> players, boolean unlocked) throws CommandSyntaxException {
+            Collection<ServerPlayerEntity> players, ProgressChange change, ProgressTarget target) {
+        // 管理命令复用身体事务；只修改指定范围，不维护另一份授权状态。
         int changed = 0;
         for (var player : players) {
             try {
                 // OP 不经过阅读门槛；身体宿主仍须接好，禁止调试命令写另一份状态。
                 var runtime = runtime(player.getServer());
-                runtime.service.setUnlocked(player.getUuid(), unlocked);
+                if (target == ProgressTarget.INNER_VISION) {
+                    runtime.service.changeScroll(player.getUuid(), ScrollKind.INNER_VISION, change);
+                } else {
+                    runtime.service.changeAll(player.getUuid(), change);
+                }
                 for (var session : List.copyOf(runtime.sessions)) {
                     if (session.belongsTo(player)) {
                         session.invalidate();
@@ -72,8 +106,10 @@ public final class ProgressionFabric implements ModInitializer, FabricServerModu
             }
         }
         int count = changed;
-        context.getSource().sendFeedback(() -> Text.literal("已" + (unlocked ? "解锁" : "重置")
-                + "残卷进度：" + count + " 名玩家"), true);
+        String action = change == ProgressChange.UNLOCK ? "解锁" : "重置";
+        String scope = target == ProgressTarget.ALL ? "全部残卷" : "内观残卷";
+        context.getSource().sendFeedback(() -> Text.literal("已" + action
+                + scope + "进度：" + count + " 名玩家"), true /* broadcastToOps */);
         return changed;
     }
 
@@ -121,6 +157,12 @@ public final class ProgressionFabric implements ModInitializer, FabricServerModu
     /** 供人体主动修炼入口校验；OP 原有调试入口无需调用。 */
     public static boolean canCultivate(ServerPlayerEntity player) {
         return runtime(player.getServer()).service.progress(player.getUuid()).getQiNotesRead();
+    }
+
+    public static boolean canInspect(ServerPlayerEntity player) {
+        // 修炼页与内观卷同时授权，和身体订阅及客户端展示采用同一语义。
+        var progress = runtime(player.getServer()).service.progress(player.getUuid());
+        return progress.getQiNotesRead() && progress.getInnerVisionScrollRead();
     }
 
     static void open(ServerPlayerEntity player, ScrollKind scroll) {
@@ -172,9 +214,11 @@ public final class ProgressionFabric implements ModInitializer, FabricServerModu
                     case QI_NOTES -> "unlocked";
                     case GATHERING -> "gathering_unlocked";
                     case MIDDLE_JIAO -> "middle_jiao_unlocked";
+                    case INNER_VISION -> "inner_vision_unlocked";
                     default -> throw new IllegalStateException("解锁结果缺少残卷类型");
                 };
-                player.sendMessage(Text.translatable("message.meridian_progression." + message), false);
+                player.sendMessage(Text.translatable("message.meridian_progression." + message),
+                        scroll == ScrollKind.INNER_VISION);
             }
         }
 

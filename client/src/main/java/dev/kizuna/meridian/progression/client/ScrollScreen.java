@@ -49,6 +49,8 @@ public final class ScrollScreen extends Screen {
             texture = "gathering";
         } else if (content == ScrollContent.MIDDLE_JIAO) {
             texture = "middle_jiao";
+        } else if (content == ScrollContent.INNER_VISION) {
+            texture = "inner_vision";
         } else {
             throw new IllegalArgumentException("残卷缺少对应背景");
         }

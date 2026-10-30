@@ -1,4 +1,8 @@
 {
+  "itemGroup.meridian_progression.progression": "修炼",
+  "item.meridian_progression.inner_vision_scroll": "内观残卷",
+  "item.meridian_progression.inner_vision_scroll.description": "说明如何闭目内视己身。右键即解锁内观，无须看完。",
+  "message.meridian_progression.inner_vision_unlocked": "内观已解锁。在修炼页打开「身体 → 检视」即可内视己身。",
   "item.meridian_progression.fragment_scroll": "残卷",
   "item.meridian_progression.gathering_scroll": "聚气残卷",
   "item.meridian_progression.gathering_scroll.description": "说明手动与自动吐纳。右键即解锁聚气，无须看完。",

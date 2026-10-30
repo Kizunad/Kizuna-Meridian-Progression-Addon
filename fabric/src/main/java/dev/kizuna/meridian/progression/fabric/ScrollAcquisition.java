@@ -5,11 +5,14 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.AbstractSkeletonEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Item;
 import net.minecraft.loot.LootPool;
+import net.minecraft.loot.LootTable;
 import net.minecraft.loot.condition.RandomChanceLootCondition;
 import net.minecraft.loot.entry.ItemEntry;
 import net.minecraft.util.Identifier;
 import java.util.Set;
+import java.util.List;
 
 /** 首轮占位概率；箱子每表独立抽一次，骷髅只在原版生成初始化时抽一次。 */
 public final class ScrollAcquisition {
@@ -18,6 +21,9 @@ public final class ScrollAcquisition {
     public static final float GUARANTEED_DROP_CHANCE = 2.0f;
     public static final float GATHERING_CHEST_CHANCE = 0.12f;
     public static final float MIDDLE_JIAO_CHEST_CHANCE = 0.12f;
+    public static final float INNER_VISION_CHEST_CHANCE = 0.12f;
+    private static final List<Item> SKELETON_SCROLLS = List.of(
+            ProgressionItems.SCROLL, ProgressionItems.INNER_VISION_SCROLL);
     public static final Set<Identifier> GATHERING_LOOT_TABLES = Set.of(
             new Identifier("minecraft", "chests/simple_dungeon"),
             new Identifier("minecraft", "chests/abandoned_mineshaft"));
@@ -31,22 +37,31 @@ public final class ScrollAcquisition {
             new Identifier("minecraft", "chests/jungle_temple"));
 
     public static void registerLoot() {
+        // 各卷各用独立池，数据包替换过的表不追加内容。
         LootTableEvents.MODIFY.register((resources, manager, id, table, source) -> {
             // 尊重数据包替换，只向原版内建目标表追加独立池。
             if (source.isBuiltin() && LOOT_TABLES.contains(id)) {
-                table.pool(LootPool.builder().conditionally(RandomChanceLootCondition.builder(CHEST_SCROLL_CHANCE))
-                        .with(ItemEntry.builder(ProgressionItems.SCROLL)));
+                addScrollPool(table, ProgressionItems.SCROLL, CHEST_SCROLL_CHANCE);
+                addScrollPool(table, ProgressionItems.INNER_VISION_SCROLL, INNER_VISION_CHEST_CHANCE);
             }
             // 新卷获取点和概率均为命名占位，独立池不改变原札记抽取。
             if (source.isBuiltin() && GATHERING_LOOT_TABLES.contains(id)) {
-                table.pool(LootPool.builder().conditionally(RandomChanceLootCondition.builder(GATHERING_CHEST_CHANCE))
-                        .with(ItemEntry.builder(ProgressionItems.GATHERING_SCROLL)));
+                addScrollPool(table, ProgressionItems.GATHERING_SCROLL, GATHERING_CHEST_CHANCE);
             }
             if (source.isBuiltin() && MIDDLE_JIAO_LOOT_TABLES.contains(id)) {
-                table.pool(LootPool.builder().conditionally(RandomChanceLootCondition.builder(MIDDLE_JIAO_CHEST_CHANCE))
-                        .with(ItemEntry.builder(ProgressionItems.MIDDLE_JIAO_SCROLL)));
+                addScrollPool(table, ProgressionItems.MIDDLE_JIAO_SCROLL, MIDDLE_JIAO_CHEST_CHANCE);
             }
         });
+    }
+
+    private static void addScrollPool(LootTable.Builder table, Item scroll, float chance) {
+        // 条件与条目分开构造，所有残卷共享同一种独立随机池结构。
+        var condition = RandomChanceLootCondition.builder(chance);
+        var entry = ItemEntry.builder(scroll);
+        var pool = LootPool.builder()
+                .conditionally(condition)
+                .with(entry);
+        table.pool(pool);
     }
 
     public static void equipSkeleton(AbstractSkeletonEntity skeleton) {
@@ -54,7 +69,8 @@ public final class ScrollAcquisition {
         if (skeleton.getType() == EntityType.SKELETON
                 && skeleton.getEquippedStack(EquipmentSlot.OFFHAND).isEmpty()
                 && skeleton.getRandom().nextFloat() < SKELETON_SCROLL_CHANCE) {
-            skeleton.equipStack(EquipmentSlot.OFFHAND, new ItemStack(ProgressionItems.SCROLL));
+            Item scroll = SKELETON_SCROLLS.get(skeleton.getRandom().nextInt(SKELETON_SCROLLS.size()));
+            skeleton.equipStack(EquipmentSlot.OFFHAND, new ItemStack(scroll));
             skeleton.setEquipmentDropChance(EquipmentSlot.OFFHAND, GUARANTEED_DROP_CHANCE);
         }
     }

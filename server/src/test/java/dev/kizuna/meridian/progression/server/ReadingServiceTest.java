@@ -47,7 +47,7 @@ public class ReadingServiceTest {
         }
         assertEquals("8053e3137b1a399d977b9a8dfb7a85cdde9a1c4125288bfef75e39b1dff2b362", ScrollContent.QI_NOTES.revision());
         assertEquals(94325, ScrollContent.QI_NOTES.minimumPlaybackMs());
-        var reset = service.setUnlocked(PLAYER, false);
+        var reset = service.changeAll(PLAYER, ReadingService.ProgressChange.RESET);
         assertFalse(reset.getQiNotesRead() || reset.getGatheringScrollRead() || reset.getMiddleJiaoScrollRead());
     }
 
@@ -153,8 +153,8 @@ public class ReadingServiceTest {
     public void opResetRevokesExistingReadingAndCanUnlockWithoutWaiting() {
         // 管理员撤权后，旧画面的完成意图不能恢复已重置的权限。
         var old = service.open(PLAYER, CONNECTION).message();
-        assertTrue(service.setUnlocked(PLAYER, true).getQiNotesRead());
-        assertFalse(service.setUnlocked(PLAYER, false).getQiNotesRead());
+        assertTrue(service.changeAll(PLAYER, ReadingService.ProgressChange.UNLOCK).getQiNotesRead());
+        assertFalse(service.changeAll(PLAYER, ReadingService.ProgressChange.RESET).getQiNotesRead());
         assertEquals(ReadingResult.INVALID_SESSION, finish(old.getSessionId()));
         assertFalse(service.progress(PLAYER).getQiNotesRead());
         var current = service.open(PLAYER, CONNECTION);
