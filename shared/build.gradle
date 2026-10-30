@@ -1,9 +1,10 @@
 plugins { id 'com.google.protobuf' }
 
-dependencies { api 'com.google.protobuf:protobuf-java:4.36.2' }
+dependencies { api libs.protobuf.java }
 def descriptor = layout.buildDirectory.file('descriptors/progression-v1.desc')
 protobuf {
-    protoc { artifact = 'com.google.protobuf:protoc:4.36.2' }
+    // 编译器与运行库固定同版。
+    protoc { artifact = "com.google.protobuf:protoc:${libs.versions.protobuf.java.get()}" }
     generateProtoTasks {
         ofSourceSet('main').configureEach { task ->
             task.generateDescriptorSet = true

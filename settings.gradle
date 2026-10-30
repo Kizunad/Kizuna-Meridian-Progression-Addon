@@ -6,5 +6,16 @@ pluginManagement {
     }
 }
 
+// 相邻仓库位置、产物路径与第三方版本都由 Framework 的工作区脚本提供（kizunaWorkspace、libs）。
+apply from: new File(rootDir.parentFile, 'Kizuna-Meridian-Mod-Framework/scripts/workspace.gradle')
+
 rootProject.name = 'kizuna-meridian-progression-addon'
 include 'shared', 'server', 'fabric', 'client'
+
+// 上游尚未发布坐标；按清单目录组合独立仓库的实际工程，不复制源码或协议。
+kizunaWorkspace.includeSource('framework', [server: 'local.meridian:server'])
+kizunaWorkspace.includeSource('bs3d', [server: 'local.bs3d:server'])
+kizunaWorkspace.includeSource('inventory-ui', ['': 'local.inventory-ui:client', server: 'local.inventory-ui:server'])
+// Items 宿主库要嵌进 common 安装 JAR，Loom 1.13 只嵌套模块组件，不能再嵌文件。
+// 同一仓库被多处组合时只采用最先登记的替换规则；Items 自身只组合 Inventory UI server，必须排在 Inventory UI 之后。
+kizunaWorkspace.includeSource('items', ['': 'local.items:items'])

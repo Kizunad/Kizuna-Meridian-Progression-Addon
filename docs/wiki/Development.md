@@ -10,9 +10,9 @@
 | client | 手卷画面、占位音效、输入意图和服务端进度只读投影 |
 | docs/wiki | 文档唯一编辑来源；README 仅为入口 |
 
-目标为 Java 17、Minecraft 1.20.1、Yarn 1.20.1+build.10、Fabric Loader 0.16.10、Fabric API 0.92.3+1.20.1、Loom 1.6-SNAPSHOT（现有缓存为 1.6.12）、Gradle 8.8、Protobuf 4.36.2。
+目标为 Java 17、Minecraft 1.20.1、Yarn 1.20.1+build.10、Fabric Loader 0.16.10、Fabric API 0.92.3+1.20.1、Loom 1.13.6、Gradle 8.14.6、Protobuf 4.36.2；第三方版本取自 Framework 的 `scripts/libs.versions.toml`。Loom 1.13 要求运行 Gradle 的 JDK 为 21 及以上，产物仍以 Java 17 编译。
 
-构建使用同级已构建的 Items、BS3D server、Inventory UI client/server 和 Meridian Framework server JAR。Items 是无模组 ID 的库，编译使用其 named dev JAR，安装时只嵌套一次 remap JAR。运行统一应用 Framework 的完整装配脚本，按 fabric/client 源码模块分别排除自身，并显式提供开发环境所需的纯 Java 库。路径以 [fabric 构建文件](../../fabric/build.gradle) 和 [client 构建文件](../../client/build.gradle) 为准。
+settings 应用 Framework 的 `scripts/workspace.gradle`，相邻仓库位置与产物路径都按其装配清单生成（`-Pkizuna.dir.<清单 id>` 改指单个仓库）。Meridian Framework server、Items、BS3D server 与 Inventory UI client/server 以源码组合构建，编译使用上游 named 开发 JAR 并随本仓先行构建，开发运行由完整装配按替换坐标装入。Items 是无模组 ID 的库，编译使用其 named dev JAR，安装时只嵌套一次 remap JAR。运行统一应用 Framework 的完整装配脚本，按 fabric/client 源码模块分别排除自身，并显式提供开发环境所需的纯 Java 库。路径以 [fabric 构建文件](../../fabric/build.gradle) 和 [client 构建文件](../../client/build.gradle) 为准。
 
 ## 常规验证
 

@@ -1,18 +1,15 @@
 plugins { id 'fabric-loom' }
 
-def inventoryJar = rootProject.file('../Kizuna-Inventory-UI-Framework/build/libs/kizuna-inventory-ui-framework-0.1.0-SNAPSHOT.jar')
-if (!inventoryJar.isFile()) {
-    throw new GradleException("需要已构建的 Inventory UI 客户端产物：${inventoryJar}")
-}
 repositories { maven { url = 'https://maven.fabricmc.net/' } }
 dependencies {
-    minecraft 'com.mojang:minecraft:1.20.1'
-    mappings 'net.fabricmc:yarn:1.20.1+build.10:v2'
-    modImplementation 'net.fabricmc:fabric-loader:0.16.10'
-    modImplementation 'net.fabricmc.fabric-api:fabric-api:0.92.3+1.20.1'
-    modImplementation files(inventoryJar)
+    minecraft libs.minecraft
+    mappings "net.fabricmc:yarn:${libs.versions.yarn.get()}:v2"
+    modImplementation libs.fabric.loader
+    modImplementation libs.fabric.api
+    // Inventory UI 客户端以源码组合，编译取 named 开发 JAR；开发运行由完整装配按替换坐标装入。
+    compileOnly('local.inventory-ui:client') { targetConfiguration = 'namedElements' }
     implementation project(':shared')
-    testImplementation 'junit:junit:4.13.2'
+    testImplementation libs.junit4
 }
 test { useJUnit() }
 processResources {
@@ -20,4 +17,4 @@ processResources {
     filesMatching('fabric.mod.json') { expand version: project.version }
 }
 loom { mods { meridian_progression_client { sourceSet sourceSets.main } } }
-apply from: '../../Kizuna-Meridian-Mod-Framework/scripts/full-assembly.gradle'
+apply from: new File(kizunaWorkspace.directory('framework'), 'scripts/full-assembly.gradle')
