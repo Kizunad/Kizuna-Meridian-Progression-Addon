@@ -32,7 +32,7 @@ git diff --check
 - `./gradlew build`：protoc、四模块编译、Loom 安装 JAR、阅读/正文整体回归和文档及美术资源检查。
 - `./gradlew :fabric:runGametest`：真实注册表、四箱战利品注入、骷髅携卷与已有副手保护。
 - Human 仓 `:fabric:test`：真实身体事务、未读拒绝、保存恢复、重置和其他身体算子保留进度。
-- Human-UI 仓 `xvfb-run -a ./gradlew :client:runSmoke`：独立整合服完整阅读闭环，然后验证正式内观和 GPU 人中光迹。`PROGRESSION_JOURNEY_OK` 与 `HUMAN_UI_SMOKE_OK` 必须同时出现；测试不通过 OP 旁路替代第一次正常阅读。音效检查使用真实 SoundManager：正常展开、正文重排不重播、低风音量 0.05、Esc 清理及空格加速读完后合拢一次；分别输出 `SCROLL_AUDIO_ESC_OK` 和 `SCROLL_AUDIO_COMPLETE_OK`。
+- Human-UI 仓 `env -u DISPLAY -u WAYLAND_DISPLAY LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a -s "-screen 0 1920x1100x24" ./gradlew :client:runSmoke`（无显示写法与屏幕尺寸的原因见 Human-UI 仓 `docs/wiki/Integration.md`）：独立整合服完整阅读闭环，然后验证正式内观和 GPU 人中光迹。`PROGRESSION_JOURNEY_OK` 与 `HUMAN_UI_SMOKE_OK` 必须同时出现；测试不通过 OP 旁路替代第一次正常阅读。音效检查使用真实 SoundManager：正常展开、正文重排不重播、低风音量 0.05、Esc 清理及空格加速读完后合拢一次；分别输出 `SCROLL_AUDIO_ESC_OK` 和 `SCROLL_AUDIO_COMPLETE_OK`。
 
 ## 本轮实际结果
 
