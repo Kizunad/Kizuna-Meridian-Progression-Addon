@@ -9,8 +9,8 @@
 | Kizuna Inventory UI Framework | MIT；复用客户端和服务端统一 Protobuf 路由，必需运行依赖，不内嵌；原许可见 LICENSE-INVENTORY-UI |
 | Protocol Buffers 4.36.2 | BSD 3-Clause；生成本项目协议，内嵌原始 Java 运行库；许可见 LICENSE-PROTOBUF |
 | Fabric Loader / Fabric API | Apache-2.0；游戏宿主提供，不内嵌 |
-| Fabric Loom | MIT；仅构建和映射使用，不分发映射或游戏类 |
-| Gradle Wrapper 8.8 | Apache-2.0 及其附带组件许可；从同级 Items 仓库复制，保留 LICENSE-GRADLE、NOTICE-GRADLE 和原始版权头 |
+| Fabric Loom 1.13.6 | MIT；仅构建和映射使用，不分发映射或游戏类 |
+| Gradle Wrapper 8.14.6 | Apache-2.0 及其附带组件许可；从同级 Items 仓库复制，保留 LICENSE-GRADLE、NOTICE-GRADLE 和原始版权头 |
 | Protobuf Gradle Plugin 0.9.6 | Apache-2.0；仅构建使用 |
 | JUnit 4.13.2 / Hamcrest 1.3 | EPL-1.0 / BSD-3-Clause；仅测试使用，不进入安装产物 |
 | ffmpeg / libvorbis | 仅作为本机占位音效编码工具，不分发二进制；音效为本仓库脚本原创合成，不采样第三方录音 |
