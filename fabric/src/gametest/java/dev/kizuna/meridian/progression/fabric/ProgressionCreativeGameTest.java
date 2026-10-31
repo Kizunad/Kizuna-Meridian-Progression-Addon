@@ -1,5 +1,7 @@
 package dev.kizuna.meridian.progression.fabric;
 
+import static dev.kizuna.meridian.progression.fabric.ProgressionGameTestTicks.DEFAULT_TIMEOUT;
+
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -9,7 +11,7 @@ import java.util.List;
 
 /** 直接检查游戏创造栏注册及显示顺序，不复制生产条目提供器。 */
 public final class ProgressionCreativeGameTest {
-    @GameTest
+    @GameTest(maxTicks = DEFAULT_TIMEOUT)
     public void cultivationTabContainsExactlyFourScrollsInUnlockOrder(GameTestHelper context) {
         // 构建真实创造栏显示条目，同时核对图标和物品注册身份。
         context.assertTrue(BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(ProgressionItems.GROUP_ID), "修炼创造栏未注册");

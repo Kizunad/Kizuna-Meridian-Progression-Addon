@@ -1,5 +1,7 @@
 package dev.kizuna.meridian.progression.fabric;
 
+import static dev.kizuna.meridian.progression.fabric.ProgressionGameTestTicks.DEFAULT_TIMEOUT;
+
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -23,7 +25,7 @@ import java.util.Set;
 public final class ProgressionGameTest {
     private static final int LOOT_SEED_COUNT = 200;
     private static final int SKELETON_ATTEMPTS = 2_000;
-    @GameTest
+    @GameTest(maxTicks = DEFAULT_TIMEOUT)
     public void registeredScrollAppearsInLootAndPreservesExistingOffhand(GameTestHelper context) {
         // 使用游戏实际注册表和已加载战利品表，不以独立夹具模拟注册成功。
         context.assertTrue(BuiltInRegistries.ITEM.getValue(ProgressionItems.SCROLL_ID) == ProgressionItems.SCROLL,
