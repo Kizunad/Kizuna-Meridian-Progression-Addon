@@ -17,7 +17,7 @@
 /give @s meridian_progression:middle_jiao_scroll
 ```
 
-先右键残卷，按 I 进入修炼页，再打开「身体 → 检视」：未读内观卷时显示「内观」「尚未读过内观残卷」。右键内观残卷立即收到动作栏提示，Esc 合卷后重开检视可见体表，再依次选择骨架、肌肉、器官和经脉。`/meridian progression reset inner_vision` 会立即关闭检视并撤销内部订阅，但保留其他三卷；`unlock inner_vision` 只恢复该卷权限。首次解锁才提示，重复阅读只重播。
+先右键残卷，按 I 进入修炼页，再打开「身体 → 检视」：未读内观卷时显示「内观」「尚未读过内观残卷」。右键内观残卷立即收到动作栏提示，Esc 合卷后重开检视可见体表，再依次选择骨架、肌肉、器官和经脉。OP 用 `progression reset` 的内观形式（写法见 [Framework 指令页](https://github.com/Kizunad/Kizuna-Meridian-Mod-Framework/wiki/Commands)）会立即关闭检视并撤销内部订阅，但保留其他三卷；对应的 `unlock` 只恢复该卷权限。首次解锁才提示，重复阅读只重播。
 
 内观残卷与札记共用四种箱子来源，各以独立池 12% 掉落；普通骷髅保持 3% 携卷概率，在札记与内观残卷之间等概率选择，不覆盖已有副手。
 

@@ -8,6 +8,7 @@ import dev.kizuna.inventoryui.server.ServerRequest;
 import dev.kizuna.inventoryui.server.fabric.FabricServerModule;
 import dev.kizuna.inventoryui.protocol.pb.WireProtocol.Capability;
 import dev.kizuna.inventoryui.protocol.pb.WireProtocol.Direction;
+import dev.kizuna.meridian.fabric.MeridianCommands;
 import dev.kizuna.meridian.progression.ProgressionProtocol;
 import dev.kizuna.meridian.progression.pb.ProgressionMessages.ReadingIntent;
 import dev.kizuna.meridian.progression.pb.ProgressionMessages.ReadingOutcome;
@@ -18,12 +19,10 @@ import dev.kizuna.meridian.progression.server.ProgressionStore;
 import dev.kizuna.meridian.progression.server.ReadingService;
 import dev.kizuna.meridian.progression.server.ReadingService.ProgressChange;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -57,28 +56,21 @@ public final class ProgressionFabric implements ModInitializer, FabricServerModu
                 List.copyOf(runtime.sessions).forEach(ReadingSession::tick);
             }
         });
-        CommandRegistrationCallback.EVENT.register((dispatcher, access, environment) ->
-                dispatcher.register(Commands.literal("meridian")
-                        .then(Commands.literal("progression")
-                                .requires(source -> source.hasPermission(OP_PERMISSION_LEVEL))
-                                .then(command("unlock", ProgressChange.UNLOCK))
-                                .then(command("reset", ProgressChange.RESET)))));
+        // /meridian progression unlock|reset [<targets>] [inner_vision] 登记在 Framework 的注册点，整条要求权限 2。
+        MeridianCommands.register(MeridianCommands.Branch.PROGRESSION, "unlock", OP_PERMISSION_LEVEL,
+                (node, context) -> command(node, ProgressChange.UNLOCK));
+        MeridianCommands.register(MeridianCommands.Branch.PROGRESSION, "reset", OP_PERMISSION_LEVEL,
+                (node, context) -> command(node, ProgressChange.RESET));
     }
 
-    private static LiteralArgumentBuilder<CommandSourceStack> command(String name, ProgressChange change) {
-        // 原整组语法保持可用，单卷字面子命令不会被误当成玩家名。
-        return Commands.literal(name)
-                .executes(context -> change(context, List.of(context.getSource().getPlayerOrException()),
-                        change, ProgressTarget.ALL))
-                .then(Commands.argument("players", EntityArgument.players())
-                        .executes(context -> change(context, EntityArgument.getPlayers(context, "players"),
-                                change, ProgressTarget.ALL)))
+    private static void command(LiteralArgumentBuilder<CommandSourceStack> node, ProgressChange change) {
+        // 省略目标时作用于执行玩家；整组与单卷共用可选目标。inner_vision 是字面量，
+        // 精确匹配时优先于玩家名，单卷子命令不会被误当成玩家名。
+        MeridianCommands.optionalPlayers(node, (parent, targets) -> parent
+                .executes(context -> change(context, targets.resolve(context), change, ProgressTarget.ALL))
                 .then(Commands.literal("inner_vision")
-                        .executes(context -> change(context, List.of(context.getSource().getPlayerOrException()),
-                                change, ProgressTarget.INNER_VISION))
-                        .then(Commands.argument("players", EntityArgument.players())
-                                .executes(context -> change(context, EntityArgument.getPlayers(context, "players"),
-                                        change, ProgressTarget.INNER_VISION))));
+                        .executes(context -> change(context, targets.resolve(context), change,
+                                ProgressTarget.INNER_VISION))));
     }
 
     private static int change(CommandContext<CommandSourceStack> context,

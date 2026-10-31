@@ -50,6 +50,6 @@
 
 ## 调试命令
 
-`/meridian progression unlock [players]` 同时解锁四卷，`/meridian progression reset [players]` 同时重置四卷；要求 OP 等级 2。`/meridian progression unlock inner_vision [players]` 与 `/meridian progression reset inner_vision [players]` 只改内观卷。省略 players 时以执行玩家为目标；控制台须指定目标，支持玩家选择器。普通阅读始终独立解锁，调试批量授权不改变阅读规则。
+本仓在 Framework 的 `/meridian` 注册点登记 `progression unlock` 与 `progression reset`：不带 `inner_vision` 时同时解锁或重置四卷，带 `inner_vision` 时只改内观卷；要求 OP 等级 2，省略目标时作用于执行玩家，写法见 [Framework 指令页](https://github.com/Kizunad/Kizuna-Meridian-Mod-Framework/wiki/Commands)。普通阅读始终独立解锁，调试批量授权不改变阅读规则。
 
 命令使用同一身体宿主，先撤销旧阅读凭据再修改和同步；未接宿主时明确报错。原有 OP 命令不受阅读门槛，本仓库没有改动其他命令入口。

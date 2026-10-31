@@ -11,6 +11,7 @@
 - [x] **生命周期**：每次 `SERVER_STARTING` 安装该服务器的适配器；JOIN 先载入身体，READY 同步进度；重生重新发布；`SERVER_STOPPED` 清除运行时。
 - [x] **服务端授权**：吐纳要求札记与聚气卷，开脉要求札记；中焦要求札记与中焦卷。内观 `BodyViewRequest` 检查身体归属、札记和内观卷。未授权返回 `ACCESS_DENIED`，中焦网络给出找卷提示。整组重置串行停止吐纳、暂停开脉、解除占用、停止动画并撤销内观订阅；单卷重置只撤内观。
 - [x] **自然身体与 OP**：出生 0.36 元、自然扩散和运动不受阅读门槛影响；原真元调试与新的解锁/重置均保留。
+- [x] **指令注册点**：解锁/重置登记在 Framework 的 Fabric 模组 `meridian_framework` 的 `/meridian` 注册点（`MeridianCommands`），`fabric.mod.json` 依赖该模组。
 
 Progression 当前提供 `installStore`、`publishProgress`、`canCultivate`、`canInspect`，详见 [协议](Protocol.md)。没有读取/反射访问 Human 私有世界状态，也没有在本仓库建立独立持久账本。
 
