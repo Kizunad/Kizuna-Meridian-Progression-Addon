@@ -34,13 +34,15 @@ Progression 当前提供 `installStore`、`publishProgress`、`canCultivate`、`
 | `server/build/libs/kizuna-meridian-progression-addon-server-0.1.0-SNAPSHOT.jar` | 纯 Java 规则，安装时嵌套在 common；Loom 开发时显式提供 |
 | `shared/build/libs/kizuna-meridian-progression-addon-shared-0.1.0-SNAPSHOT.jar` | 协议/正文/时间，安装时嵌套在 common；Loom 开发时显式提供 |
 
-- [x] **Items 与 Framework**：Items 没有独立模组 ID，common 内嵌其 remap 库一次；开发编译/运行使用 named dev 库。Framework 使用同一源码/产物，不复制实现。
+- [x] **Items 与 Framework**：Items 没有独立模组 ID，common 内嵌其库一次；开发编译/运行使用同一个 JAR（26.2 不重映射）。Framework 使用同一源码/产物，不复制实现。
 - [x] **Inventory UI / BS3D**：server 产物改为 common；客户端删除复制的服务端入口，强制依赖 common。BS3D 客户端使用独立 `backpack_storage_3d_client` ID 并加入完整装配，提供握手必需的客户端消息模块。
 - [x] **运行入口**：Progression 的 GameTest 和 Human-UI 的真实整合服 smoke 使用同一完整装配，无缺包场景或安装开关。
 
 所有 Meridian 模块（含本仓库）及 Players-Animation 均为适用端强制依赖。本仓库两个 fabric.mod.json 已声明自身可声明的适用端依赖；Framework/Items 为库，不能编造模组 ID。
 
 ## 接线后的验收
+
+以下勾选为 1.20.1 时的实测结果。迁到 26.2 后，依赖完整装配的 GameTest、客户端握手与 smoke 尚未重跑，要等 Human、Vanilla Damage、Vanilla Healing 等上游迁完后补跑，结果记在 [构建页](Development.md)。
 
 - [x] 新玩家出生总量含在途保持 0.36 元；实际客户端隐藏修炼且直接打开被拒绝。Human 回归验证服务端吐纳、内观与开脉授权；旧真元调试可用。
 - [x] 真实拾取与右键后立即写入并提示一次；中途关闭或立即 finished 保留权限，重复使用不重复保存或提示。未打开的伪造 finished 与重置后的旧令牌不能授予权限。会话回归另覆盖重开、连接替换与玩家隔离。

@@ -10,9 +10,11 @@
 | client | 手卷画面、占位音效、输入意图和服务端进度只读投影 |
 | docs/wiki | 文档唯一编辑来源；README 仅为入口 |
 
-目标为 Java 17、Minecraft 1.20.1、Mojang 官方映射、Fabric Loader 0.16.10、Fabric API 0.92.3+1.20.1、Loom 1.13.6、Gradle 8.14.6、Protobuf 4.36.2；第三方版本取自 Framework 的 `scripts/libs.versions.toml`。Loom 1.13 要求运行 Gradle 的 JDK 为 21 及以上，产物仍以 Java 17 编译。
+目标为 Java 25、Minecraft 26.2（不混淆，无映射）、Fabric Loader 0.20.1、Fabric API 0.161.0+26.2、Loom 1.19.3、Gradle 9.8.0、Protobuf 4.36.2；第三方版本取自 Framework 的 `scripts/libs.versions.toml`。Gradle 守护进程按 `gradle/gradle-daemon-jvm.properties` 使用 JDK 25，产物以 Java 25 编译。
 
-settings 应用 Framework 的 `scripts/workspace.gradle`，相邻仓库位置与产物路径都按其装配清单生成（`-Pkizuna.dir.<清单 id>` 改指单个仓库）。Meridian Framework server、Items、BS3D server 与 Inventory UI client/server 以源码组合构建，编译使用上游 named 开发 JAR 并随本仓先行构建，开发运行由完整装配按替换坐标装入。Items 是无模组 ID 的库，编译使用其 named dev JAR，安装时只嵌套一次 remap JAR。运行统一应用 Framework 的完整装配脚本，按 fabric/client 源码模块分别排除自身，并显式提供开发环境所需的纯 Java 库。路径以 [fabric 构建文件](../../fabric/build.gradle) 和 [client 构建文件](../../client/build.gradle) 为准。
+settings 应用 Framework 的 `scripts/workspace.gradle`，相邻仓库位置与产物路径都按其装配清单生成（`-Pkizuna.dir.<清单 id>` 改指单个仓库）。Meridian Framework server、Items、BS3D server 与 Inventory UI client/server 以源码组合构建，编译直接使用上游普通 JAR 并随本仓先行构建，开发运行由完整装配按替换坐标装入。Items 是无模组 ID 的库，编译与安装嵌套使用同一个 JAR，安装时只嵌套一次。client 另以 compileOnly 声明 owo：Loom 按运行变体解析编译依赖来决定注入接口，Inventory UI 带来的 owo 会给 `GuiGraphicsExtractor` 注入接口，javac 须能解析该接口；本仓不直接调用 owo。运行统一应用 Framework 的完整装配脚本，按 fabric/client 源码模块分别排除自身，并显式提供开发环境所需的纯 Java 库。路径以 [fabric 构建文件](../../fabric/build.gradle) 和 [client 构建文件](../../client/build.gradle) 为准。
+
+26.2 的物品默认组件（含单栈上限）在服务器数据加载后才绑定，Items 目录校验要读它们，因此卷轴的 Items 目录在每次 `SERVER_STARTING` 时加载，不在模组初始化时加载。四卷另有 `assets/meridian_progression/items/` 客户端物品定义，指向原有的 generated 模型。
 
 ## 常规验证
 
@@ -23,7 +25,7 @@ python3 scripts/check_source_text.py "../Kizuna-remote-session/07-单机流程.m
 git diff --check
 ```
 
-`build` 汇总四模块构建、服务端 JUnit 回归与文档检查；协议生成代码、描述集、测试输出与缓存不入库。安装产物为 fabric 和 client 的 remap JAR；shared 另输出协议 ZIP。仅编译通过不能代表游戏接线完成。
+`build` 汇总四模块构建、服务端 JUnit 回归与文档检查；协议生成代码、描述集、测试输出与缓存不入库。安装产物为 fabric 和 client 的 `jar` 任务 JAR（26.2 不重映射）；shared 另输出协议 ZIP。仅编译通过不能代表游戏接线完成。
 
 ## 自动验收入口
 
@@ -33,6 +35,8 @@ git diff --check
 - Human-UI 仓 `xvfb-run -a ./gradlew :client:runSmoke`：独立整合服完整阅读闭环，然后验证正式内观和 GPU 人中光迹。`PROGRESSION_JOURNEY_OK` 与 `HUMAN_UI_SMOKE_OK` 必须同时出现；测试不通过 OP 旁路替代第一次正常阅读。音效检查使用真实 SoundManager：正常展开、正文重排不重播、低风音量 0.05、Esc 清理及空格加速读完后合拢一次；分别输出 `SCROLL_AUDIO_ESC_OK` 和 `SCROLL_AUDIO_COMPLETE_OK`。
 
 ## 本轮实际结果
+
+2026-11-01 迁移到 Minecraft 26.2：本仓 `test build checkDocs` 通过，JUnit 17 项（server 16、client 1）零失败、错误、跳过，与迁移前相同；文档检查覆盖 14 个 JSON 资源；GameTest 源集编译通过。阅读界面改为 26.2 的 `extractRenderState`：背景透明度随贴图颜色传入，裁切框在单位变换下按原屏幕坐标登记，不叠加原版模糊背景。`:fabric:runGametest`、客户端阅读画面与 Human-UI smoke 都依赖完整装配，其中 Human、Vanilla Damage、Vanilla Healing 尚未迁到 26.2，本次没有运行；阅读画面效果也尚未实看。下方 1.20.1 时期的结果不代表 26.2 已验证。
 
 2026-10-23 即时解锁与独立美术：Progression、Human、UI、Human-UI 四仓构建通过，共 64 项 JUnit（14/37/10/3）零失败、错误、跳过；Progression 1 项和 Human 3 项 GameTest 通过。Human-UI 在 Xvfb 下完成真实客户端/整合服 smoke，输出 `SCROLL_AUDIO_ESC_OK`、`SCROLL_AUDIO_COMPLETE_OK`、`AUTOMATIC_BREATHING_JOURNEY_OK`、`CULTIVATION_JOURNEY_OK`、`PROGRESSION_JOURNEY_OK`、`HUMAN_UI_SMOKE_OK`。覆盖真实右键立即解锁、立即完成与 Esc 保留权限、两卷提前关卷后的菜单、保存重启、OP 撤权与重生。三卷阅读截图保存在 Human-UI 的 `client/build/smoke/screenshots/{qi-notes,gathering,middle-jiao}-reading.png`。本轮没有重新进行 Windows Native 验收，不能将这些 Linux 客户端结果称为 WN 截图。
 

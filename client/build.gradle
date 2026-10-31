@@ -1,13 +1,16 @@
-plugins { id 'fabric-loom' }
+plugins { id 'net.fabricmc.fabric-loom' }
 
 repositories { maven { url = 'https://maven.fabricmc.net/' } }
 dependencies {
+    // 26.x 不混淆：直接用官方名编译，没有映射，模组依赖也不经重映射。
     minecraft libs.minecraft
-    mappings loom.officialMojangMappings()
-    modImplementation libs.fabric.loader
-    modImplementation libs.fabric.api
-    // Inventory UI 客户端以源码组合，编译取 named 开发 JAR；开发运行由完整装配按替换坐标装入。
-    compileOnly('dev.kizuna.inventoryui:kizuna-inventory-ui-framework') { targetConfiguration = 'namedElements' }
+    implementation libs.fabric.loader
+    implementation libs.fabric.api
+    // Inventory UI 客户端以源码组合，编译直接取其普通 JAR；开发运行由完整装配按替换坐标装入。
+    compileOnly 'dev.kizuna.inventoryui:kizuna-inventory-ui-framework'
+    // Loom 按运行变体解析编译依赖来决定注入接口，Inventory UI 带来的 owo 0.13 会给 GuiGraphicsExtractor 注入接口；
+    // 本模块不直接调用 owo，但 javac 须看得到该接口。
+    compileOnly libs.owo
     implementation project(':shared')
     testImplementation libs.junit4
 }

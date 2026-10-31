@@ -1,19 +1,19 @@
-plugins { id 'fabric-loom' }
+plugins { id 'net.fabricmc.fabric-loom' }
 
 repositories { maven { url = 'https://maven.fabricmc.net/' } }
 dependencies {
+    // 26.x 不混淆：直接用官方名编译，没有映射，模组依赖也不经重映射。
     minecraft libs.minecraft
-    mappings loom.officialMojangMappings()
-    modImplementation libs.fabric.loader
-    modImplementation libs.fabric.api
-    // 组合进来的 Loom 工程编译取 named 开发 JAR（上游随本仓先行构建）；Items 没有 Fabric 模组描述，同样直接用 named 库。
+    implementation libs.fabric.loader
+    implementation libs.fabric.api
+    // 组合进来的上游工程按坐标替换为源码工程，编译直接取其普通 JAR（上游随本仓先行构建）。
     // 开发运行时这些模块由完整装配按替换坐标装入，这里不再声明第二份。
-    compileOnly('dev.kizuna.backpack3d:server') { targetConfiguration = 'namedElements' }
-    compileOnly('dev.kizuna.inventoryui:server') { targetConfiguration = 'namedElements' }
-    compileOnly('dev.kizuna.meridian.items:kizuna-meridian-items-addon') { targetConfiguration = 'namedElements' }
+    compileOnly 'dev.kizuna.backpack3d:server'
+    compileOnly 'dev.kizuna.inventoryui:server'
+    compileOnly 'dev.kizuna.meridian.items:kizuna-meridian-items-addon'
     compileOnly 'local.meridian:server'
     // /meridian 指令统一注册点（Framework 的 Fabric 模组 meridian_framework），组合 Framework 时自动替换为源码工程。
-    compileOnly('dev.kizuna.meridian:fabric') { targetConfiguration = 'namedElements' }
+    compileOnly 'dev.kizuna.meridian:fabric'
     // Items 是必需宿主库，没有独立模组 ID；安装产物内嵌一次。
     include 'dev.kizuna.meridian.items:kizuna-meridian-items-addon'
     implementation project(':server')

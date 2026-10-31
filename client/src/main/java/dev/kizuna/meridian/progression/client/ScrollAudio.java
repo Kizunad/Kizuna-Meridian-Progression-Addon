@@ -5,7 +5,7 @@ import dev.kizuna.meridian.progression.ScrollPlayback;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.sounds.SoundManager;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -67,7 +67,7 @@ final class ScrollAudio {
 
     private static final class ScrollSound extends AbstractTickableSoundInstance {
         ScrollSound(String name, float volume, boolean loop) {
-            super(SoundEvent.createVariableRangeEvent(new ResourceLocation("meridian_progression", name)), SoundSource.AMBIENT, RandomSource.create());
+            super(SoundEvent.createVariableRangeEvent(Identifier.fromNamespaceAndPath("meridian_progression", name)), SoundSource.AMBIENT, RandomSource.create());
             // 屏幕声音跟随听者，仅风声循环，避免场景位置和距离影响阅读音量。
             this.volume = volume;
             looping = loop;

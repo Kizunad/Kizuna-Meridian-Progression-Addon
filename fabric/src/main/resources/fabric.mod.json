@@ -13,7 +13,7 @@
   },
   "mixins": ["meridian_progression.mixins.json"],
   "depends": {
-    "java": ">=17", "minecraft": "1.20.1", "fabricloader": ">=0.16.10", "fabric-api": "*", "meridian_framework": "*",
+    "java": ">=25", "minecraft": "26.2", "fabricloader": ">=0.20.1", "fabric-api": "*", "meridian_framework": "*",
     "meridian_human_host": "*", "meridian_vanilla_damage": "*", "meridian_vanilla_healing": "*",
     "kizuna_players_animation": "*", "backpack_storage_3d": "*", "kizuna_inventory_ui_server": "*"
   }

@@ -46,7 +46,7 @@ public final class ProgressionClient implements ClientModule {
         this.runtime = null;
         ClientProgression.clear();
         var client = Minecraft.getInstance();
-        if (client.screen instanceof ScrollScreen screen) {
+        if (client.gui.screen() instanceof ScrollScreen screen) {
             screen.dismiss();
         }
     }
@@ -65,12 +65,12 @@ public final class ProgressionClient implements ClientModule {
                     return;
                 }
                 long source = generation;
-                client.setScreen(new ScrollScreen(open.getSessionId(), content, intent -> send(intent, source)));
+                client.gui.setScreen(new ScrollScreen(open.getSessionId(), content, intent -> send(intent, source)));
             }
             case PROGRESS -> ClientProgression.accept(event.getProgress());
             case OUTCOME -> {
                 var outcome = event.getOutcome();
-                if (client.screen instanceof ScrollScreen screen
+                if (client.gui.screen() instanceof ScrollScreen screen
                         && screen.sessionId().equals(outcome.getSessionId())) {
                     screen.dismiss();
                 }
@@ -108,7 +108,7 @@ public final class ProgressionClient implements ClientModule {
     private static void message(String key) {
         var player = Minecraft.getInstance().player;
         if (player != null) {
-            player.displayClientMessage(Component.translatable("message.meridian_progression." + key), false);
+            player.sendSystemMessage(Component.translatable("message.meridian_progression." + key));
         }
     }
 }

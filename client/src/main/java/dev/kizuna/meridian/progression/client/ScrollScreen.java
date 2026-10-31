@@ -1,17 +1,17 @@
 package dev.kizuna.meridian.progression.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.systems.RenderSystem;
 import dev.kizuna.meridian.progression.ScrollContent;
 import dev.kizuna.meridian.progression.ScrollPlayback;
 import dev.kizuna.meridian.progression.pb.ProgressionMessages.*;
 import org.lwjgl.glfw.GLFW;
 import java.util.function.Consumer;
-import net.minecraft.Util;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
 
 /** 横向手卷过场；逻辑布局固定，窗口变化仅缩放，不重置阅读。 */
 public final class ScrollScreen extends Screen {
@@ -25,7 +25,7 @@ public final class ScrollScreen extends Screen {
     private final Consumer<ReadingIntent> outbound;
     private final ScrollContent content;
     private final ScrollPlayback playback;
-    private final ResourceLocation background;
+    private final Identifier background;
     private long lastFrameMs = Util.getMillis();
     private boolean terminal;
     private ScrollAudio audio;
@@ -54,7 +54,7 @@ public final class ScrollScreen extends Screen {
         } else {
             throw new IllegalArgumentException("残卷缺少对应背景");
         }
-        this.background = new ResourceLocation("meridian_progression", "textures/gui/scroll/" + texture + ".png");
+        this.background = Identifier.fromNamespaceAndPath("meridian_progression", "textures/gui/scroll/" + texture + ".png");
     }
 
     public String sessionId() { return sessionId; }
@@ -72,11 +72,17 @@ public final class ScrollScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        // 手卷直接盖在已绘制的世界上，暗幕随展开程度在正文层绘制；不叠加 26.2 原版的模糊和菜单底图，字幕仍按原版排在背景层。
+        minecraft.gui.hud.extractDeferredSubtitles();
+    }
+
+    @Override
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         // 画面按单调时间推进；展开裁切和缩放不改变正文或生成纹理的比例。
         long now = Util.getMillis();
         boolean fast = minecraft.isWindowActive()
-                && InputConstants.isKeyDown(minecraft.getWindow().getWindow(), GLFW.GLFW_KEY_SPACE);
+                && InputConstants.isKeyDown(minecraft.getWindow(), GLFW.GLFW_KEY_SPACE);
         playback.advance(Math.max(0, now - lastFrameMs), fast);
         lastFrameMs = now;
         // 音效沿用同一播放进度；空格和窗口重排不会重新触发展开或合拢。
@@ -86,7 +92,7 @@ public final class ScrollScreen extends Screen {
             terminal = true;
             outbound.accept(ReadingIntent.newBuilder().setSessionId(sessionId)
                     .setFinished(Finished.getDefaultInstance()).build());
-            minecraft.setScreen(null);
+            minecraft.gui.setScreen(null);
             return;
         }
         float open = playback.openness();
@@ -95,18 +101,18 @@ public final class ScrollScreen extends Screen {
         float originX = (width - LOGICAL_WIDTH * scale) / 2;
         float originY = (height - LOGICAL_HEIGHT * scale) / 2;
         var matrices = context.pose();
-        matrices.pushPose();
-        matrices.translate(originX, originY, 0);
-        matrices.scale(scale, scale, 1);
+        matrices.pushMatrix();
+        matrices.translate(originX, originY);
+        matrices.scale(scale, scale);
         int left = Math.round(210 - 186 * open);
         int right = Math.round(210 + 186 * open);
-        context.enableScissor(Math.round(originX + left * scale), Math.round(originY + 8 * scale),
+        screenScissor(context, Math.round(originX + left * scale), Math.round(originY + 8 * scale),
                 Math.round(originX + right * scale), Math.round(originY + 250 * scale));
         parchment(context, open);
         context.disableScissor();
         // Scissor 使用屏幕坐标，裁切同时覆盖手卷展开边缘与固定文字视口。
         if (right - left > 8) {
-            context.enableScissor(Math.round(originX + Math.max(left + 4, TEXT_LEFT) * scale),
+            screenScissor(context, Math.round(originX + Math.max(left + 4, TEXT_LEFT) * scale),
                     Math.round(originY + 30 * scale),
                     Math.round(originX + Math.min(right - 4, TEXT_RIGHT) * scale),
                     Math.round(originY + 230 * scale));
@@ -123,35 +129,37 @@ public final class ScrollScreen extends Screen {
             }
             context.disableScissor();
         }
-        matrices.popPose();
+        matrices.popMatrix();
         if (open > 0.1f) {
-            context.drawCenteredString(font,
+            context.centeredText(font,
                     Component.translatable("screen.meridian_progression.controls"), width / 2,
                     Math.min(height - 12, Math.round(originY + 255 * scale)), color(0xDDCCAA, open));
         }
     }
 
-    private void parchment(GuiGraphics context, float alpha) {
-        // 纸面、卷边和纹样全部来自本卷生成图，只做展开裁切与淡入淡出。
+    private static void screenScissor(GuiGraphicsExtractor context, int left, int top, int right, int bottom) {
+        // 26.2 的 Scissor 会套用当前变换；这里的边界已按屏幕坐标取整，临时回到单位变换再登记。
         var matrices = context.pose();
-        matrices.pushPose();
-        matrices.translate(24, 8, 0);
-        matrices.scale(372.0f / BACKGROUND_WIDTH, 242.0f / BACKGROUND_HEIGHT, 1);
-        RenderSystem.enableBlend();
-        RenderSystem.setShaderColor(1, 1, 1, alpha);
-        try {
-            context.blit(background, 0, 0, 0, 0,
-                    BACKGROUND_WIDTH, BACKGROUND_HEIGHT, BACKGROUND_WIDTH, BACKGROUND_HEIGHT);
-        } finally {
-            // 后续文字和其他界面不能继承背景透明度或矩阵。
-            RenderSystem.setShaderColor(1, 1, 1, 1);
-            RenderSystem.disableBlend();
-            matrices.popPose();
-        }
+        matrices.pushMatrix();
+        matrices.identity();
+        context.enableScissor(left, top, right, bottom);
+        matrices.popMatrix();
     }
 
-    private void glyph(GuiGraphics context, ScrollContent.Glyph glyph, int x, int y, int column, int row, float alpha) {
-        // Font 会将极低 alpha 当作不透明；淡字中心也须越过该阈值，避免闪字。
+    private void parchment(GuiGraphicsExtractor context, float alpha) {
+        // 纸面、卷边和纹样全部来自本卷生成图，只做展开裁切与淡入淡出。
+        // 26.2 的 GUI 贴图管线自带半透明混合，透明度随贴图颜色传入，不再改全局着色器颜色。
+        var matrices = context.pose();
+        matrices.pushMatrix();
+        matrices.translate(24, 8);
+        matrices.scale(372.0f / BACKGROUND_WIDTH, 242.0f / BACKGROUND_HEIGHT);
+        context.blit(RenderPipelines.GUI_TEXTURED, background, 0, 0, 0, 0,
+                BACKGROUND_WIDTH, BACKGROUND_HEIGHT, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, color(0xFFFFFF, alpha));
+        matrices.popMatrix();
+    }
+
+    private void glyph(GuiGraphicsExtractor context, ScrollContent.Glyph glyph, int x, int y, int column, int row, float alpha) {
+        // 展开初期整字跳过：1.20.1 的 Font 把极低 alpha 当作不透明而闪字；26.2 已无此问题，阈值保留以维持相同的显现时机。
         if (alpha < 0.07f) {
             return;
         }
@@ -166,12 +174,12 @@ public final class ScrollScreen extends Screen {
             context.fill(x + 2, y + 3, x + 7, y + 7, color(0x30291F, alpha * 0.28f));
         } else if (glyph.style() == ScrollContent.Style.FAINT) {
             for (int[] offset : new int[][] {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}) {
-                context.drawString(font, glyph.text(), x + offset[0], y + offset[1],
+                context.text(font, glyph.text(), x + offset[0], y + offset[1],
                         color(0x4D4130, Math.max(0.02f, alpha * 0.075f)), false);
             }
-            context.drawString(font, glyph.text(), x, y, color(0x332B21, alpha * 0.36f), false);
+            context.text(font, glyph.text(), x, y, color(0x332B21, alpha * 0.36f), false);
         } else {
-            context.drawString(font, glyph.text(), x, y, color(0x332B21, alpha * 0.94f), false);
+            context.text(font, glyph.text(), x, y, color(0x332B21, alpha * 0.94f), false);
         }
     }
 
@@ -182,7 +190,7 @@ public final class ScrollScreen extends Screen {
     public void dismiss() {
         // 服务器取消、死亡或断线属于终态，不能由 removed 反发旧请求。
         terminal = true;
-        minecraft.setScreen(null);
+        minecraft.gui.setScreen(null);
     }
 
     @Override

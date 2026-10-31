@@ -80,7 +80,7 @@ public final class ProgressionFabric implements ModInitializer, FabricServerModu
         for (var player : players) {
             try {
                 // OP 不经过阅读门槛；身体宿主仍须接好，禁止调试命令写另一份状态。
-                var runtime = runtime(player.getServer());
+                var runtime = runtime(player.level().getServer());
                 if (target == ProgressTarget.INNER_VISION) {
                     runtime.service.changeScroll(player.getUUID(), ScrollKind.INNER_VISION, change);
                 } else {
@@ -139,7 +139,7 @@ public final class ProgressionFabric implements ModInitializer, FabricServerModu
 
     /** 身体加载、重生或更改后由 Human 调用；未就绪连接在握手后主动请求同步。 */
     public static void publishProgress(ServerPlayer player) {
-        for (var session : List.copyOf(runtime(player.getServer()).sessions)) {
+        for (var session : List.copyOf(runtime(player.level().getServer()).sessions)) {
             if (session.belongsTo(player)) {
                 session.synchronize();
             }
@@ -148,12 +148,12 @@ public final class ProgressionFabric implements ModInitializer, FabricServerModu
 
     /** 供人体主动修炼入口校验；OP 原有调试入口无需调用。 */
     public static boolean canCultivate(ServerPlayer player) {
-        return runtime(player.getServer()).service.progress(player.getUUID()).getQiNotesRead();
+        return runtime(player.level().getServer()).service.progress(player.getUUID()).getQiNotesRead();
     }
 
     public static boolean canInspect(ServerPlayer player) {
         // 修炼页与内观卷同时授权，和身体订阅及客户端展示采用同一语义。
-        var progress = runtime(player.getServer()).service.progress(player.getUUID());
+        var progress = runtime(player.level().getServer()).service.progress(player.getUUID());
         return progress.getQiNotesRead() && progress.getInnerVisionScrollRead();
     }
 
@@ -162,10 +162,10 @@ public final class ProgressionFabric implements ModInitializer, FabricServerModu
         if (!player.isAlive() || player.isSpectator()) {
             return;
         }
-        var session = runtime(player.getServer()).sessions.stream()
+        var session = runtime(player.level().getServer()).sessions.stream()
                 .filter(candidate -> candidate.belongsTo(player)).findFirst();
         if (session.isEmpty()) {
-            player.displayClientMessage(Component.translatable("message.meridian_progression.wait_connection"), false);
+            player.sendSystemMessage(Component.translatable("message.meridian_progression.wait_connection"));
             return;
         }
         session.get().open(player, scroll);
@@ -209,8 +209,8 @@ public final class ProgressionFabric implements ModInitializer, FabricServerModu
                     case INNER_VISION -> "inner_vision_unlocked";
                     default -> throw new IllegalStateException("解锁结果缺少残卷类型");
                 };
-                player.displayClientMessage(Component.translatable("message.meridian_progression." + message),
-                        scroll == ScrollKind.INNER_VISION);
+                player.sendSystemMessage(Component.translatable("message.meridian_progression." + message),
+                        scroll == ScrollKind.INNER_VISION /* overlay */);
             }
         }
 
