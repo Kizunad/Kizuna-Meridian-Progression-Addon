@@ -25,8 +25,6 @@ git diff --check
 
 `build` 汇总四模块构建、服务端 JUnit 回归与文档检查；协议生成代码、描述集、测试输出与缓存不入库。安装产物为 fabric 和 client 的 remap JAR；shared 另输出协议 ZIP。仅编译通过不能代表游戏接线完成。
 
-`fabric/build.gradle` 的 `clearNestedJarCache` 在每次 `remapJar` 前删除 `fabric/build/loom-cache/temp/modprocessing`：Loom 只按坐标复用这里的嵌套 JAR，SNAPSHOT 坐标不变时会把旧的嵌套 JAR 打进发布 JAR。
-
 ## 自动验收入口
 
 - `./gradlew build`：protoc、四模块编译、Loom 安装 JAR、阅读/正文整体回归和文档及美术资源检查。
