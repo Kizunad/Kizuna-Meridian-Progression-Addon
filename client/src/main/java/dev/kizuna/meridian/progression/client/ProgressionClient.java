@@ -7,9 +7,9 @@ import dev.kizuna.inventoryui.registry.FrameworkCatalog;
 import dev.kizuna.meridian.progression.ProgressionProtocol;
 import dev.kizuna.meridian.progression.ScrollContent;
 import dev.kizuna.meridian.progression.pb.ProgressionMessages.*;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.Text;
 import java.util.Set;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 
 /** 不登记额外通道或修炼页，只接入框架的必需消息模块和残卷过场。 */
 public final class ProgressionClient implements ClientModule {
@@ -45,15 +45,15 @@ public final class ProgressionClient implements ClientModule {
         generation++;
         this.runtime = null;
         ClientProgression.clear();
-        var client = MinecraftClient.getInstance();
-        if (client.currentScreen instanceof ScrollScreen screen) {
+        var client = Minecraft.getInstance();
+        if (client.screen instanceof ScrollScreen screen) {
             screen.dismiss();
         }
     }
 
     private void receive(ProgressionEvent event) {
         // 解锁随右键后的 progress 发布；播放完成或取消仅负责关闭对应画面。
-        var client = MinecraftClient.getInstance();
+        var client = Minecraft.getInstance();
         switch (event.getEventCase()) {
             case OPEN -> {
                 var open = event.getOpen();
@@ -70,7 +70,7 @@ public final class ProgressionClient implements ClientModule {
             case PROGRESS -> ClientProgression.accept(event.getProgress());
             case OUTCOME -> {
                 var outcome = event.getOutcome();
-                if (client.currentScreen instanceof ScrollScreen screen
+                if (client.screen instanceof ScrollScreen screen
                         && screen.sessionId().equals(outcome.getSessionId())) {
                     screen.dismiss();
                 }
@@ -96,7 +96,7 @@ public final class ProgressionClient implements ClientModule {
                 .thenAccept(outcome -> {
                     // RESULT 只确认路由受理，解锁以 ProgressionEvent 的权威状态为准。
                     if (!outcome.accepted() && !outcome.code().equals("REJECTED")) {
-                        MinecraftClient.getInstance().execute(() -> {
+                        Minecraft.getInstance().execute(() -> {
                             if (source == generation && runtime != null) {
                                 message("transport_error");
                             }
@@ -106,9 +106,9 @@ public final class ProgressionClient implements ClientModule {
     }
 
     private static void message(String key) {
-        var player = MinecraftClient.getInstance().player;
+        var player = Minecraft.getInstance().player;
         if (player != null) {
-            player.sendMessage(Text.translatable("message.meridian_progression." + key), false);
+            player.displayClientMessage(Component.translatable("message.meridian_progression." + key), false);
         }
     }
 }

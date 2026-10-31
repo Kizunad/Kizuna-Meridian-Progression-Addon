@@ -2,13 +2,13 @@ package dev.kizuna.meridian.progression.client;
 
 import dev.kizuna.meridian.progression.ScrollContent;
 import dev.kizuna.meridian.progression.ScrollPlayback;
-import net.minecraft.client.sound.MovingSoundInstance;
-import net.minecraft.client.sound.SoundInstance;
-import net.minecraft.client.sound.SoundManager;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
+import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.client.sounds.SoundManager;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 
 /** 一次阅读持有自己的声音实例；纸声只触发一次，低风随卷轴淡入淡出。 */
 final class ScrollAudio {
@@ -65,14 +65,14 @@ final class ScrollAudio {
         sounds.stop(wind);
     }
 
-    private static final class ScrollSound extends MovingSoundInstance {
+    private static final class ScrollSound extends AbstractTickableSoundInstance {
         ScrollSound(String name, float volume, boolean loop) {
-            super(SoundEvent.of(new Identifier("meridian_progression", name)), SoundCategory.AMBIENT, Random.create());
+            super(SoundEvent.createVariableRangeEvent(new ResourceLocation("meridian_progression", name)), SoundSource.AMBIENT, RandomSource.create());
             // 屏幕声音跟随听者，仅风声循环，避免场景位置和距离影响阅读音量。
             this.volume = volume;
-            repeat = loop;
+            looping = loop;
             relative = true;
-            attenuationType = SoundInstance.AttenuationType.NONE;
+            attenuation = SoundInstance.Attenuation.NONE;
         }
 
         void level(float volume) {
@@ -81,14 +81,14 @@ final class ScrollAudio {
         }
 
         @Override
-        public boolean shouldAlwaysPlay() {
+        public boolean canStartSilent() {
             // 风声从零音量淡入，允许声音引擎在初始静音时创建声源。
-            return repeat;
+            return looping;
         }
 
         @Override
         public void tick() {
-            // SoundSystem 每 tick 应用当前音量；界面移除时显式停止实例。
+            // SoundEngine 每 tick 应用当前音量；界面移除时显式停止实例。
         }
     }
 }

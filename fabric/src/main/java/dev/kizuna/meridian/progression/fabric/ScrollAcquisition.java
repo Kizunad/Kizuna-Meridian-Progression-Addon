@@ -1,16 +1,16 @@
 package dev.kizuna.meridian.progression.fabric;
 
 import net.fabricmc.fabric.api.loot.v2.LootTableEvents;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.mob.AbstractSkeletonEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Item;
-import net.minecraft.loot.LootPool;
-import net.minecraft.loot.LootTable;
-import net.minecraft.loot.condition.RandomChanceLootCondition;
-import net.minecraft.loot.entry.ItemEntry;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.monster.AbstractSkeleton;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.loot.LootPool;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
 import java.util.Set;
 import java.util.List;
 
@@ -24,17 +24,17 @@ public final class ScrollAcquisition {
     public static final float INNER_VISION_CHEST_CHANCE = 0.12f;
     private static final List<Item> SKELETON_SCROLLS = List.of(
             ProgressionItems.SCROLL, ProgressionItems.INNER_VISION_SCROLL);
-    public static final Set<Identifier> GATHERING_LOOT_TABLES = Set.of(
-            new Identifier("minecraft", "chests/simple_dungeon"),
-            new Identifier("minecraft", "chests/abandoned_mineshaft"));
-    public static final Set<Identifier> MIDDLE_JIAO_LOOT_TABLES = Set.of(
-            new Identifier("minecraft", "chests/desert_pyramid"),
-            new Identifier("minecraft", "chests/jungle_temple"));
-    public static final Set<Identifier> LOOT_TABLES = Set.of(
-            new Identifier("minecraft", "chests/simple_dungeon"),
-            new Identifier("minecraft", "chests/abandoned_mineshaft"),
-            new Identifier("minecraft", "chests/desert_pyramid"),
-            new Identifier("minecraft", "chests/jungle_temple"));
+    public static final Set<ResourceLocation> GATHERING_LOOT_TABLES = Set.of(
+            new ResourceLocation("minecraft", "chests/simple_dungeon"),
+            new ResourceLocation("minecraft", "chests/abandoned_mineshaft"));
+    public static final Set<ResourceLocation> MIDDLE_JIAO_LOOT_TABLES = Set.of(
+            new ResourceLocation("minecraft", "chests/desert_pyramid"),
+            new ResourceLocation("minecraft", "chests/jungle_temple"));
+    public static final Set<ResourceLocation> LOOT_TABLES = Set.of(
+            new ResourceLocation("minecraft", "chests/simple_dungeon"),
+            new ResourceLocation("minecraft", "chests/abandoned_mineshaft"),
+            new ResourceLocation("minecraft", "chests/desert_pyramid"),
+            new ResourceLocation("minecraft", "chests/jungle_temple"));
 
     public static void registerLoot() {
         // 各卷各用独立池，数据包替换过的表不追加内容。
@@ -56,22 +56,22 @@ public final class ScrollAcquisition {
 
     private static void addScrollPool(LootTable.Builder table, Item scroll, float chance) {
         // 条件与条目分开构造，所有残卷共享同一种独立随机池结构。
-        var condition = RandomChanceLootCondition.builder(chance);
-        var entry = ItemEntry.builder(scroll);
-        var pool = LootPool.builder()
-                .conditionally(condition)
-                .with(entry);
-        table.pool(pool);
+        var condition = LootItemRandomChanceCondition.randomChance(chance);
+        var entry = LootItem.lootTableItem(scroll);
+        var pool = LootPool.lootPool()
+                .when(condition)
+                .add(entry);
+        table.withPool(pool);
     }
 
-    public static void equipSkeleton(AbstractSkeletonEntity skeleton) {
+    public static void equipSkeleton(AbstractSkeleton skeleton) {
         // 不覆盖已有副手；限定普通骷髅，重新读档不经过 initialize，不能反复抽取。
         if (skeleton.getType() == EntityType.SKELETON
-                && skeleton.getEquippedStack(EquipmentSlot.OFFHAND).isEmpty()
+                && skeleton.getItemBySlot(EquipmentSlot.OFFHAND).isEmpty()
                 && skeleton.getRandom().nextFloat() < SKELETON_SCROLL_CHANCE) {
             Item scroll = SKELETON_SCROLLS.get(skeleton.getRandom().nextInt(SKELETON_SCROLLS.size()));
-            skeleton.equipStack(EquipmentSlot.OFFHAND, new ItemStack(scroll));
-            skeleton.setEquipmentDropChance(EquipmentSlot.OFFHAND, GUARANTEED_DROP_CHANCE);
+            skeleton.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(scroll));
+            skeleton.setDropChance(EquipmentSlot.OFFHAND, GUARANTEED_DROP_CHANCE);
         }
     }
 
