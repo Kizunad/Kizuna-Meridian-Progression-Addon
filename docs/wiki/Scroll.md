@@ -58,7 +58,7 @@
 | 丛林神庙 `minecraft:chests/jungle_temple` | 同上 |
 | 普通骷髅 | 生成初始化尾部 3% 装入空副手，札记/内观各占一半；不覆盖主手弓与已有副手 |
 
-概率集中在 ScrollAcquisition 的 `CHEST_SCROLL_CHANCE=0.12f`、`SKELETON_SCROLL_CHANCE=0.03f`，均是待平衡的命名占位值。只注入原版内建来源，尊重数据包对战利品表的替换。骷髅不在读档时重抽；副手可见，装备掉率设为原版必掉值 `2.0f`，掉落遵循原版 doMobLoot 和物品实体规则。
+概率集中在 ScrollAcquisition 的 `CHEST_SCROLL_CHANCE=0.12f`、`SKELETON_SCROLL_CHANCE=0.03f`，均是待平衡的命名占位值。只注入原版内建来源，尊重数据包对战利品表的替换；原版实验包（如交易平衡调整 `trade_rebalance`）覆盖的表也算原版内建。Fabric 0.161 的 LootTableSource 不区分实验包与数据包，由 `LootTablePackSourceMixin` 补记包来源，上游有区分后换回。骷髅不在读档时重抽；副手可见，装备掉率设为原版必掉值 `2.0f`，掉落遵循原版 doMobLoot 和物品实体规则。
 
 ## 播放
 

@@ -1,7 +1,9 @@
 package dev.kizuna.meridian.progression.fabric;
 
 import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
+import net.fabricmc.fabric.api.loot.v3.LootTableSource;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.monster.skeleton.AbstractSkeleton;
@@ -11,6 +13,7 @@ import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
 
@@ -35,6 +38,8 @@ public final class ScrollAcquisition {
             Identifier.fromNamespaceAndPath("minecraft", "chests/abandoned_mineshaft"),
             Identifier.fromNamespaceAndPath("minecraft", "chests/desert_pyramid"),
             Identifier.fromNamespaceAndPath("minecraft", "chests/jungle_temple"));
+    // 胜出资源来自原版实验包的战利品表 ID。扫描目录与 MODIFY 回调在同一加载线程上先后执行，按线程各存一份。
+    private static final ThreadLocal<Set<Identifier>> FEATURE_PACK_LOOT_TABLES = ThreadLocal.withInitial(HashSet::new);
 
     public static void registerLoot() {
         // 各卷各用独立池，数据包替换过的表不追加内容。
@@ -42,18 +47,37 @@ public final class ScrollAcquisition {
             // 26.2 事件按注册键传入战利品表，目标集合仍按资源 ID 比较。
             Identifier id = key.identifier();
             // 尊重数据包替换，只向原版内建目标表追加独立池。
-            if (source.isBuiltin() && LOOT_TABLES.contains(id)) {
+            boolean vanilla = isVanillaTable(id, source);
+            if (vanilla && LOOT_TABLES.contains(id)) {
                 addScrollPool(table, ProgressionItems.SCROLL, CHEST_SCROLL_CHANCE);
                 addScrollPool(table, ProgressionItems.INNER_VISION_SCROLL, INNER_VISION_CHEST_CHANCE);
             }
             // 新卷获取点和概率均为命名占位，独立池不改变原札记抽取。
-            if (source.isBuiltin() && GATHERING_LOOT_TABLES.contains(id)) {
+            if (vanilla && GATHERING_LOOT_TABLES.contains(id)) {
                 addScrollPool(table, ProgressionItems.GATHERING_SCROLL, GATHERING_CHEST_CHANCE);
             }
-            if (source.isBuiltin() && MIDDLE_JIAO_LOOT_TABLES.contains(id)) {
+            if (vanilla && MIDDLE_JIAO_LOOT_TABLES.contains(id)) {
                 addScrollPool(table, ProgressionItems.MIDDLE_JIAO_SCROLL, MIDDLE_JIAO_CHEST_CHANCE);
             }
         });
+    }
+
+    public static void recordLootTablePack(Identifier id, PackSource pack) {
+        // 每次扫描都按本次胜出的资源重写，上一个世界启用过的实验包不会带到下一次加载。
+        if (pack == PackSource.FEATURE) {
+            FEATURE_PACK_LOOT_TABLES.get().add(id);
+        } else {
+            FEATURE_PACK_LOOT_TABLES.get().remove(id);
+        }
+    }
+
+    private static boolean isVanillaTable(Identifier id, LootTableSource source) {
+        // Fabric API 0.161.0+26.2 的 LootTableSource 不区分实验包与数据包：原版实验包（如 trade_rebalance）
+        // 覆盖的表报 DATA_PACK。用 LootTablePackSourceMixin 记下的包来源补判，上游有区分后换回只看 isBuiltin()。
+        if (source.isBuiltin()) {
+            return true;
+        }
+        return source == LootTableSource.DATA_PACK && FEATURE_PACK_LOOT_TABLES.get().contains(id);
     }
 
     private static void addScrollPool(LootTable.Builder table, Item scroll, float chance) {
