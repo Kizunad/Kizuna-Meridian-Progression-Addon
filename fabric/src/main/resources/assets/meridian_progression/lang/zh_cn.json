@@ -10,7 +10,7 @@
   "item.meridian_progression.middle_jiao_scroll.description": "说明中焦周天、关口、自动与突破。右键即解锁中焦，无须看完。",
   "message.meridian_progression.gathering_unlocked": "聚气已解锁。使用《炁脉札记》后，可在修炼页打开吐纳，也可使用自动吐纳。",
   "message.meridian_progression.middle_jiao_unlocked": "中焦已解锁。使用《炁脉札记》后，可在修炼页打开中焦，也可勾选自动。",
-  "item.meridian_progression.fragment_scroll.description": "一卷旧纸，墨迹残损。右键即解锁修炼页，无须看完。",
+  "item.meridian_progression.fragment_scroll.description": "一卷旧纸，墨迹残损。右键即解锁修炼页，无须看完；之后按 I 打开修炼页。",
   "message.meridian_progression.wait_connection": "请等待修炼进度模块连接就绪。",
   "message.meridian_progression.unlocked": "修炼页已解锁。按 I 打开，残卷可随时合上。",
   "message.meridian_progression.host_not_connected": "身体进度宿主尚未接线，本次阅读无法保存解锁。",
