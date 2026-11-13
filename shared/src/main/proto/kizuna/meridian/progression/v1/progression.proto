@@ -10,6 +10,7 @@ message PlayerProgress {
   bool gathering_scroll_read = 3;
   bool middle_jiao_scroll_read = 4;
   bool inner_vision_scroll_read = 5;
+  bool true_qi_scroll_read = 6; // 只记读过，不开任何能力。
 }
 
 // 每卷独立记入身体；客户端不能通过完成意图指定要解锁的卷。
@@ -19,6 +20,7 @@ enum ScrollKind {
   GATHERING = 2;
   MIDDLE_JIAO = 3;
   INNER_VISION = 4;
+  TRUE_QI = 5;
 }
 
 // 时间、玩家身份和解锁值均不接受客户端上传。

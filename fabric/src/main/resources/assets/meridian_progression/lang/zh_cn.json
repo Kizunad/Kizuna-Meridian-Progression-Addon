@@ -35,6 +35,11 @@
   "advancements.meridian_progression.cultivation.eight_meridians.description": "两臂的肺经、大肠经，两腿的胃经、脾经，左右八条都通了、又都完好，才冲得了关。",
   "advancements.meridian_progression.cultivation.true_qi.title": "炼炁成真",
   "advancements.meridian_progression.cultivation.true_qi.description": "读过中焦那一卷，八脉运转周天，再借外壁积下的真元一鼓作气冲过中焦，游炁便凝成真炁。",
+  "advancements.meridian_progression.cultivation.true_qi_scroll.title": "真炁残卷",
+  "advancements.meridian_progression.cultivation.true_qi_scroll.description": "破入真炁的人留下过亲历。掠夺者前哨、林地府邸、要塞书库的箱子里，偶尔压着一卷。",
   "advancements.meridian_progression.cultivation.cultivators.title": "道上的人",
-  "advancements.meridian_progression.cultivation.cultivators.description": "村民、行商、掠夺者、卫道士、唤魔者、沼泽的女巫……这世上的人身上都走着炁，一出手便是功法。"
+  "advancements.meridian_progression.cultivation.cultivators.description": "村民、行商、掠夺者、卫道士、唤魔者、沼泽的女巫……这世上的人身上都走着炁，一出手便是功法。",
+  "item.meridian_progression.true_qi_scroll": "真炁残卷",
+  "item.meridian_progression.true_qi_scroll.description": "前人破入真炁之后的亲历：初破之变、新现八脉、吐纳易轨、中焦再炼、气态之用。右键展开阅读。",
+  "message.meridian_progression.true_qi_read": "读罢《真炁残卷》，前辈所记已了然于心。"
 }

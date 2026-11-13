@@ -21,6 +21,7 @@ import net.minecraft.world.level.GameType;
 
 /**
  * 「修行」进度页的根、修炼线和功法线开头：父子照设计稿，根一进世界就给，三卷各自完成，跟类人交过手才完成「道上的人」。
+ * 真炁残卷挂在「炼炁成真」下面，拿到这一卷就完成，不用先破入真炁。
  * 开脉、境界那三条由 Human 的测试推进。
  */
 public final class ProgressionAdvancementGameTest {
@@ -29,6 +30,8 @@ public final class ProgressionAdvancementGameTest {
     private static final Identifier INNER_VISION = id("inner_vision");
     private static final Identifier GATHERING = id("gathering");
     private static final Identifier MIDDLE_JIAO = id("middle_jiao");
+    private static final Identifier TRUE_QI = id("true_qi");
+    private static final Identifier TRUE_QI_SCROLL = id("true_qi_scroll");
     private static final Identifier CULTIVATORS = id("cultivators");
     private static final float HIT = 1.0F;
     private static final BlockPos MOB_POS = new BlockPos(1, 1, 1);
@@ -43,7 +46,8 @@ public final class ProgressionAdvancementGameTest {
         parents.put(MIDDLE_JIAO, NOTES);
         parents.put(id("first_meridian"), GATHERING);
         parents.put(id("eight_meridians"), id("first_meridian"));
-        parents.put(id("true_qi"), id("eight_meridians"));
+        parents.put(TRUE_QI, id("eight_meridians"));
+        parents.put(TRUE_QI_SCROLL, TRUE_QI);
         parents.put(CULTIVATORS, ROOT);
         AdvancementHolder root = advancement(context, ROOT);
         DisplayInfo rootDisplay = root.value().display().orElseThrow();
@@ -80,6 +84,22 @@ public final class ProgressionAdvancementGameTest {
             context.assertTrue(done(context, player, GATHERING), "拿到聚气卷没完成聚气");
             context.assertFalse(done(context, player, INNER_VISION), "拿到聚气卷完成了内观");
             context.assertFalse(done(context, player, MIDDLE_JIAO), "拿到聚气卷完成了中焦");
+        } finally {
+            release(player);
+        }
+        context.succeed();
+    }
+
+    @GameTest(maxTicks = DEFAULT_TIMEOUT)
+    public void trueQiScrollCompletesOnlyItsOwnAdvancement(GameTestHelper context) {
+        // 拿到中焦卷不算；拿到真炁残卷才完成它，「炼炁成真」要靠境界，不因这一卷完成。
+        ServerPlayer player = player(context);
+        try {
+            give(player, ProgressionItems.MIDDLE_JIAO_SCROLL);
+            context.assertFalse(done(context, player, TRUE_QI_SCROLL), "拿到中焦卷就完成了真炁残卷");
+            give(player, ProgressionItems.TRUE_QI_SCROLL);
+            context.assertTrue(done(context, player, TRUE_QI_SCROLL), "拿到真炁残卷没完成真炁残卷");
+            context.assertFalse(done(context, player, TRUE_QI), "拿到真炁残卷就完成了炼炁成真");
         } finally {
             release(player);
         }

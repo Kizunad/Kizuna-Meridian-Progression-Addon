@@ -47,11 +47,13 @@ def check():
                     raise ValueError(f"缺少入口实现：{entry}")
     for resource in resources:
         json.loads(resource.read_text(encoding="utf-8"))
-    # 美术是必需资源：模型引用、PNG 尺寸和四卷独立图像一起校验，防止漏装或错绑。
+    # 美术是必需资源：模型引用、PNG 尺寸和五卷独立图像一起校验，防止漏装或错绑。
     for category, module, folder, names, dimensions in (
-        ("背景", "client", "gui/scroll", ("qi_notes", "inner_vision", "gathering", "middle_jiao"), (1536, 1024)),
+        ("背景", "client", "gui/scroll",
+         ("qi_notes", "inner_vision", "gathering", "middle_jiao", "true_qi"), (1536, 1024)),
         ("图标", "fabric", "item",
-         ("fragment_scroll", "inner_vision_scroll", "gathering_scroll", "middle_jiao_scroll"), (32, 32)),
+         ("fragment_scroll", "inner_vision_scroll", "gathering_scroll", "middle_jiao_scroll", "true_qi_scroll"),
+         (32, 32)),
     ):
         checksums = set()
         assets = ROOT / module / "src/main/resources/assets/meridian_progression"
@@ -66,7 +68,7 @@ def check():
                 if model["textures"]["layer0"] != f"meridian_progression:item/{name}":
                     raise ValueError(f"图标引用错误：{name}")
         if len(checksums) != len(names):
-            raise ValueError(f"四卷{category}必须分别生成，不能复用同一图片")
+            raise ValueError(f"各卷{category}必须分别生成，不能复用同一图片")
     audio = ROOT / "client/src/main/resources/assets/meridian_progression"
     sounds = json.loads((audio / "sounds.json").read_text(encoding="utf-8"))
     for definition in sounds.values():

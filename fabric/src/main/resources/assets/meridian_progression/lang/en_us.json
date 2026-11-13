@@ -35,6 +35,11 @@
   "advancements.meridian_progression.cultivation.eight_meridians.description": "The lung and large intestine meridians of both arms, the stomach and spleen meridians of both legs: only when all eight are open and whole can you break through.",
   "advancements.meridian_progression.cultivation.true_qi.title": "Refining True Qi",
   "advancements.meridian_progression.cultivation.true_qi.description": "With the middle jiao fragment read, circulate qi through the eight meridians, then draw on the essence stored in their walls and push through the middle jiao in one breath: wandering qi condenses into true qi.",
+  "advancements.meridian_progression.cultivation.true_qi_scroll.title": "True Qi Scroll",
+  "advancements.meridian_progression.cultivation.true_qi_scroll.description": "Those who broke through to true qi left accounts behind. A copy sometimes lies in chests at pillager outposts, woodland mansions and stronghold libraries.",
   "advancements.meridian_progression.cultivation.cultivators.title": "People on the Road",
-  "advancements.meridian_progression.cultivation.cultivators.description": "Villagers, wandering traders, pillagers, vindicators, evokers, swamp witches... everyone in this world carries qi, and every blow they throw is a technique."
+  "advancements.meridian_progression.cultivation.cultivators.description": "Villagers, wandering traders, pillagers, vindicators, evokers, swamp witches... everyone in this world carries qi, and every blow they throw is a technique.",
+  "item.meridian_progression.true_qi_scroll": "True Qi Scroll",
+  "item.meridian_progression.true_qi_scroll.description": "A predecessor's account of what follows the breakthrough to True Qi. Right-click to read.",
+  "message.meridian_progression.true_qi_read": "You have read the True Qi Scroll; its author's notes stay with you."
 }

@@ -33,19 +33,23 @@ public final class ProgressionItems {
     public static final Identifier GROUP_ID = Identifier.fromNamespaceAndPath("meridian_progression", "progression");
     public static final Identifier GATHERING_SCROLL_ID = Identifier.fromNamespaceAndPath("meridian_progression", "gathering_scroll");
     public static final Identifier MIDDLE_JIAO_SCROLL_ID = Identifier.fromNamespaceAndPath("meridian_progression", "middle_jiao_scroll");
+    public static final Identifier TRUE_QI_SCROLL_ID =
+            Identifier.fromNamespaceAndPath("meridian_progression", "true_qi_scroll");
     public static final Identifier READ = Identifier.fromNamespaceAndPath("meridian_progression", "read");
     private static final Identifier EFFECT = Identifier.fromNamespaceAndPath("meridian_progression", "open_scroll");
     public static final Item SCROLL = new ScrollItem(SCROLL_ID, ScrollKind.QI_NOTES);
     public static final Item INNER_VISION_SCROLL = new ScrollItem(INNER_VISION_SCROLL_ID, ScrollKind.INNER_VISION);
     public static final Item GATHERING_SCROLL = new ScrollItem(GATHERING_SCROLL_ID, ScrollKind.GATHERING);
     public static final Item MIDDLE_JIAO_SCROLL = new ScrollItem(MIDDLE_JIAO_SCROLL_ID, ScrollKind.MIDDLE_JIAO);
+    public static final Item TRUE_QI_SCROLL = new ScrollItem(TRUE_QI_SCROLL_ID, ScrollKind.TRUE_QI);
     private static ItemRegistry<ServerPlayer> catalog;
 
     public static void register() {
-        // 四件实际物品分别登记，同一只读效果由可信物品实例决定卷种。
+        // 五件实际物品分别登记，同一只读效果由可信物品实例决定卷种。
         var bindings = new ArrayList<ItemBinding>();
         for (var entry : Map.of(SCROLL_ID, SCROLL, GATHERING_SCROLL_ID, GATHERING_SCROLL,
-                MIDDLE_JIAO_SCROLL_ID, MIDDLE_JIAO_SCROLL, INNER_VISION_SCROLL_ID, INNER_VISION_SCROLL).entrySet()) {
+                MIDDLE_JIAO_SCROLL_ID, MIDDLE_JIAO_SCROLL, INNER_VISION_SCROLL_ID, INNER_VISION_SCROLL,
+                TRUE_QI_SCROLL_ID, TRUE_QI_SCROLL).entrySet()) {
             Registry.register(BuiltInRegistries.ITEM, entry.getKey(), entry.getValue());
             ItemMetadata.register(entry.getValue(), "item.meridian_progression."
                     + entry.getKey().getPath() + ".description", Map.of());
@@ -71,6 +75,7 @@ public final class ProgressionItems {
                     entries.accept(INNER_VISION_SCROLL);
                     entries.accept(GATHERING_SCROLL);
                     entries.accept(MIDDLE_JIAO_SCROLL);
+                    entries.accept(TRUE_QI_SCROLL);
                 })
                 .build();
         Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, GROUP_ID, group);

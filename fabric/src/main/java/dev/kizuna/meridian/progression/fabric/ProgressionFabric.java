@@ -207,6 +207,7 @@ public final class ProgressionFabric implements ModInitializer, FabricServerModu
                     case GATHERING -> "gathering_unlocked";
                     case MIDDLE_JIAO -> "middle_jiao_unlocked";
                     case INNER_VISION -> "inner_vision_unlocked";
+                    case TRUE_QI -> "true_qi_read";
                     default -> throw new IllegalStateException("解锁结果缺少残卷类型");
                 };
                 player.sendSystemMessage(Component.translatable("message.meridian_progression." + message),

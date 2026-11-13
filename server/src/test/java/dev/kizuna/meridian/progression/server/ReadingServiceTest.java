@@ -96,6 +96,23 @@ public class ReadingServiceTest {
     }
 
     @Test
+    public void trueQiScrollRecordsOnlyThatItWasRead() {
+        // 真炁残卷只记读过：别的卷和能力门槛都不动，重读不再写，整组重置一并清掉。
+        var open = service.open(PLAYER, CONNECTION, ScrollKind.TRUE_QI);
+        assertEquals(ReadingResult.UNLOCKED, open.result());
+        assertEquals(ScrollContent.TRUE_QI.revision(), open.message().getContentRevision());
+        PlayerProgress progress = service.progress(PLAYER);
+        assertTrue(progress.getTrueQiScrollRead());
+        assertFalse(progress.getQiNotesRead() || progress.getInnerVisionScrollRead()
+                || progress.getGatheringScrollRead() || progress.getMiddleJiaoScrollRead());
+        var again = service.open(PLAYER, CONNECTION, ScrollKind.TRUE_QI);
+        assertEquals(ReadingResult.ALREADY_UNLOCKED, again.result());
+        assertEquals(1, body.writes);
+        var reset = service.changeAll(PLAYER, ReadingService.ProgressChange.RESET);
+        assertFalse(reset.getTrueQiScrollRead());
+    }
+
+    @Test
     public void openingAgainInvalidatesOnlyTheOldToken() {
         // 重开替换播放会话，旧令牌不能消费新令牌。
         var old = service.open(PLAYER, CONNECTION).message();

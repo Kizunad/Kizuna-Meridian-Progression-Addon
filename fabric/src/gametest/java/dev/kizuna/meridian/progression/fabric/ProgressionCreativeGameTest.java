@@ -12,7 +12,7 @@ import java.util.List;
 /** 直接检查游戏创造栏注册及显示顺序，不复制生产条目提供器。 */
 public final class ProgressionCreativeGameTest {
     @GameTest(maxTicks = DEFAULT_TIMEOUT)
-    public void cultivationTabContainsExactlyFourScrollsInUnlockOrder(GameTestHelper context) {
+    public void cultivationTabContainsExactlyFiveScrollsInReadingOrder(GameTestHelper context) {
         // 构建真实创造栏显示条目，同时核对图标和物品注册身份。
         context.assertTrue(BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(ProgressionItems.GROUP_ID), "修炼创造栏未注册");
         var world = context.getLevel();
@@ -21,7 +21,8 @@ public final class ProgressionCreativeGameTest {
                 world.registryAccess());
         group.buildContents(display);
         var expected = List.of(ProgressionItems.SCROLL, ProgressionItems.INNER_VISION_SCROLL,
-                ProgressionItems.GATHERING_SCROLL, ProgressionItems.MIDDLE_JIAO_SCROLL);
+                ProgressionItems.GATHERING_SCROLL, ProgressionItems.MIDDLE_JIAO_SCROLL,
+                ProgressionItems.TRUE_QI_SCROLL);
         var actual = group.getDisplayItems().stream().map(ItemStack::getItem).toList();
         context.assertTrue(actual.equals(expected), "修炼创造栏卷数或顺序不符：" + actual);
         context.assertTrue(group.getIconItem().is(ProgressionItems.SCROLL), "修炼创造栏图标不是残卷");

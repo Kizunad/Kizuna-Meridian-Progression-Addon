@@ -25,6 +25,7 @@ public final class ScrollAcquisition {
     public static final float GATHERING_CHEST_CHANCE = 0.12f;
     public static final float MIDDLE_JIAO_CHEST_CHANCE = 0.12f;
     public static final float INNER_VISION_CHEST_CHANCE = 0.12f;
+    public static final float TRUE_QI_CHEST_CHANCE = 0.12f;
     private static final List<Item> SKELETON_SCROLLS = List.of(
             ProgressionItems.SCROLL, ProgressionItems.INNER_VISION_SCROLL);
     public static final Set<Identifier> GATHERING_LOOT_TABLES = Set.of(
@@ -33,6 +34,11 @@ public final class ScrollAcquisition {
     public static final Set<Identifier> MIDDLE_JIAO_LOOT_TABLES = Set.of(
             Identifier.fromNamespaceAndPath("minecraft", "chests/desert_pyramid"),
             Identifier.fromNamespaceAndPath("minecraft", "chests/jungle_temple"));
+    // 真炁残卷放在掠夺者前哨、林地府邸和要塞书库：这些地方住着修到真炁的生人，或是藏书之处。
+    public static final Set<Identifier> TRUE_QI_LOOT_TABLES = Set.of(
+            Identifier.fromNamespaceAndPath("minecraft", "chests/pillager_outpost"),
+            Identifier.fromNamespaceAndPath("minecraft", "chests/woodland_mansion"),
+            Identifier.fromNamespaceAndPath("minecraft", "chests/stronghold_library"));
     public static final Set<Identifier> LOOT_TABLES = Set.of(
             Identifier.fromNamespaceAndPath("minecraft", "chests/simple_dungeon"),
             Identifier.fromNamespaceAndPath("minecraft", "chests/abandoned_mineshaft"),
@@ -58,6 +64,9 @@ public final class ScrollAcquisition {
             }
             if (vanilla && MIDDLE_JIAO_LOOT_TABLES.contains(id)) {
                 addScrollPool(table, ProgressionItems.MIDDLE_JIAO_SCROLL, MIDDLE_JIAO_CHEST_CHANCE);
+            }
+            if (vanilla && TRUE_QI_LOOT_TABLES.contains(id)) {
+                addScrollPool(table, ProgressionItems.TRUE_QI_SCROLL, TRUE_QI_CHEST_CHANCE);
             }
         });
     }

@@ -6,7 +6,7 @@
 
 | 契约 | 用途 |
 |---|---|
-| PlayerProgress | 身体内持久进度：schema_version=1，qi_notes_read=2、gathering_scroll_read=3、middle_jiao_scroll_read=4、inner_vision_scroll_read=5 四个独立字段；真实右键即授予 |
+| PlayerProgress | 身体内持久进度：schema_version=1，qi_notes_read=2、gathering_scroll_read=3、middle_jiao_scroll_read=4、inner_vision_scroll_read=5、true_qi_scroll_read=6 五个独立字段；真实右键即授予 |
 | ReadingIntent | finished / cancelled / synchronize 互斥意图；客户端不提交时长或解锁值 |
 | OpenScroll | 服务器随机会话 UUID、正文 SHA-256、scroll 卷种；卷种由真实物品决定 |
 | ReadingOutcome | 播放完成 COMPLETED=8、凭据无效、取消或操作不允许；结果带服务端凭据绑定的 scroll。旧 TOO_EARLY=3 弃用保留编号 |
@@ -25,6 +25,8 @@
 正文 SHA 继续校验播放资源一致性；最快播放时间只属于客户端表现，不再是服务器解锁门槛。消息字段编号、身体 schema 和统一路由版本保持；新增 COMPLETED 枚举不复用旧编号，适用端整套更新。
 
 `ScrollKind.INNER_VISION=4` 与 `PlayerProgress.inner_vision_scroll_read=5` 为追加字段。保持进度 schema 1：旧存档缺少字段 5 时解码为 false，无需数据迁移，不会从其他卷推断内观已读。
+
+`ScrollKind.TRUE_QI=5` 与 `PlayerProgress.true_qi_scroll_read=6` 同为追加字段，仍是 schema 1；旧存档缺少字段 6 解码为 false。这一卷只记读过，Human 不据它放开任何操作。
 
 ## 身体接口
 
@@ -50,6 +52,6 @@
 
 ## 调试命令
 
-本仓在 Framework 的 `/meridian` 注册点登记 `progression unlock` 与 `progression reset`：不带 `inner_vision` 时同时解锁或重置四卷，带 `inner_vision` 时只改内观卷；要求 OP 等级 2，省略目标时作用于执行玩家，写法见 [Framework 指令页](https://github.com/Kizunad/Kizuna-Meridian-Mod-Framework/wiki/Commands)。普通阅读始终独立解锁，调试批量授权不改变阅读规则。
+本仓在 Framework 的 `/meridian` 注册点登记 `progression unlock` 与 `progression reset`：不带 `inner_vision` 时同时解锁或重置全部五卷，带 `inner_vision` 时只改内观卷；要求 OP 等级 2，省略目标时作用于执行玩家，写法见 [Framework 指令页](https://github.com/Kizunad/Kizuna-Meridian-Mod-Framework/wiki/Commands)。普通阅读始终独立解锁，调试批量授权不改变阅读规则。
 
 命令使用同一身体宿主，先撤销旧阅读凭据再修改和同步；未接宿主时明确报错。原有 OP 命令不受阅读门槛，本仓库没有改动其他命令入口。

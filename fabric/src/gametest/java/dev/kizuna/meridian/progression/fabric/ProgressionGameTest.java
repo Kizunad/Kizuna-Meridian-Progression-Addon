@@ -35,7 +35,8 @@ public final class ProgressionGameTest {
         // 每卷独立注册、独立池，原札记的掉落仍由上方回归保护。
         for (var entry : Map.of(ProgressionItems.GATHERING_SCROLL, ScrollAcquisition.GATHERING_LOOT_TABLES,
                 ProgressionItems.MIDDLE_JIAO_SCROLL, ScrollAcquisition.MIDDLE_JIAO_LOOT_TABLES,
-                ProgressionItems.INNER_VISION_SCROLL, ScrollAcquisition.LOOT_TABLES).entrySet()) {
+                ProgressionItems.INNER_VISION_SCROLL, ScrollAcquisition.LOOT_TABLES,
+                ProgressionItems.TRUE_QI_SCROLL, ScrollAcquisition.TRUE_QI_LOOT_TABLES).entrySet()) {
             context.assertTrue(entry.getKey().getDefaultMaxStackSize() == 1, "新残卷堆叠数错误");
             verifyLoot(context, entry.getKey(), entry.getValue());
         }

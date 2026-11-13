@@ -77,6 +77,7 @@ public final class ReadingService {
             case GATHERING -> previous.getGatheringScrollRead();
             case MIDDLE_JIAO -> previous.getMiddleJiaoScrollRead();
             case INNER_VISION -> previous.getInnerVisionScrollRead();
+            case TRUE_QI -> previous.getTrueQiScrollRead();
             default -> throw new IllegalStateException("阅读会话卷种无效");
         };
         if (read) {
@@ -105,7 +106,7 @@ public final class ReadingService {
         sessions.remove(player);
         var updated = progress(player).toBuilder();
         for (var scroll : List.of(ScrollKind.QI_NOTES, ScrollKind.INNER_VISION,
-                ScrollKind.GATHERING, ScrollKind.MIDDLE_JIAO)) {
+                ScrollKind.GATHERING, ScrollKind.MIDDLE_JIAO, ScrollKind.TRUE_QI)) {
             applyScroll(updated, scroll, change);
         }
         var value = updated.build();
@@ -131,6 +132,7 @@ public final class ReadingService {
             case GATHERING -> progress.setGatheringScrollRead(unlocked);
             case MIDDLE_JIAO -> progress.setMiddleJiaoScrollRead(unlocked);
             case INNER_VISION -> progress.setInnerVisionScrollRead(unlocked);
+            case TRUE_QI -> progress.setTrueQiScrollRead(unlocked);
             default -> throw new IllegalArgumentException("阅读会话卷种无效");
         }
     }

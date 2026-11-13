@@ -1,0 +1,33 @@
+{
+  "parent": "meridian_progression:cultivation/true_qi",
+  "display": {
+    "icon": {
+      "id": "meridian_progression:true_qi_scroll"
+    },
+    "title": {
+      "translate": "advancements.meridian_progression.cultivation.true_qi_scroll.title"
+    },
+    "description": {
+      "translate": "advancements.meridian_progression.cultivation.true_qi_scroll.description"
+    }
+  },
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "meridian_progression:true_qi_scroll"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

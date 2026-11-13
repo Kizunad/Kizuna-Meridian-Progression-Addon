@@ -14,7 +14,7 @@
 
 settings 应用 Framework 的 `scripts/workspace.gradle`，相邻仓库位置与产物路径都按其装配清单生成（`-Pkizuna.dir.<清单 id>` 改指单个仓库）。Meridian Framework server、Items、BS3D server 与 Inventory UI client/server 以源码组合构建，编译直接使用上游普通 JAR 并随本仓先行构建，开发运行由完整装配按替换坐标装入。Items 是无模组 ID 的库，编译与安装嵌套使用同一个 JAR，安装时只嵌套一次。client 另以 compileOnly 声明 owo：Loom 按运行变体解析编译依赖来决定注入接口，Inventory UI 带来的 owo 会给 `GuiGraphicsExtractor` 注入接口，javac 须能解析该接口；本仓不直接调用 owo。运行统一应用 Framework 的完整装配脚本，按 fabric/client 源码模块分别排除自身，并显式提供开发环境所需的纯 Java 库。路径以 [fabric 构建文件](../../fabric/build.gradle) 和 [client 构建文件](../../client/build.gradle) 为准。
 
-26.2 的物品默认组件（含单栈上限）在服务器数据加载后才绑定，Items 目录校验要读它们，因此卷轴的 Items 目录在每次 `SERVER_STARTING` 时加载，不在模组初始化时加载。四卷另有 `assets/meridian_progression/items/` 客户端物品定义，指向原有的 generated 模型。
+26.2 的物品默认组件（含单栈上限）在服务器数据加载后才绑定，Items 目录校验要读它们，因此卷轴的 Items 目录在每次 `SERVER_STARTING` 时加载，不在模组初始化时加载。各卷另有 `assets/meridian_progression/items/` 客户端物品定义，指向原有的 generated 模型。
 
 ## 常规验证
 
@@ -52,9 +52,9 @@ git diff --check
 
 在 [完整装配](Integration.md) 中检查下列实际交互，不能以绕过必需模块的独立场景代替验收。
 
-1. 分别 `/give @s meridian_progression:fragment_scroll`、`gathering_scroll`、`middle_jiao_scroll`，确认三种图标不同、不可堆叠、手持右键不消耗、BS3D 描述正确。首次右键立即解锁对应功能，Esc 关闭后权限保留。
+1. 分别 `/give @s meridian_progression:fragment_scroll`、`gathering_scroll`、`middle_jiao_scroll`、`true_qi_scroll`，确认四种图标不同、不可堆叠、手持右键不消耗、BS3D 描述正确。首次右键立即解锁对应功能，Esc 关闭后权限保留。
 2. 用 `/loot` 分别生成四个目标表，多轮抽样核实独立池注入；生成普通骷髅抽样确认少数副手带卷，击杀确认必掉。关闭原版 doMobLoot 的行为遵循原版，不作为物品专用规则。
-3. 阅读时确认四卷各自的生成背景、横向展开、竖排从右往左、匀速流动和正文标记。展开一声纸声，正文只有轻微低风，末尾合拢一声纸声；低风随开合淡入淡出，正文没有每隔数秒明显起伏或接缝。按住/松开空格、改变窗口尺寸不重播纸声、不叠加风声。Esc 关闭立即静音，中途退出不补播合拢声。
+3. 阅读时确认各卷各自的生成背景、横向展开、竖排从右往左、匀速流动和正文标记。展开一声纸声，正文只有轻微低风，末尾合拢一声纸声；低风随开合淡入淡出，正文没有每隔数秒明显起伏或接缝。按住/松开空格、改变窗口尺寸不重播纸声、不叠加风声。Esc 关闭立即静音，中途退出不补播合拢声。
 4. 周围保留怪物，确认游戏不暂停、能受到伤害；死亡后关闭并撤销阅读。断线、重生和连接替换清理声音与凭据。
 5. 功能闭环已由上述真实客户端自动验证；可按 [接线清单](Integration.md) 在人工游玩时复核交互手感。
 
