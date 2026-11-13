@@ -1,0 +1,29 @@
+{
+  "parent": "meridian_progression:cultivation/gathering",
+  "display": {
+    "icon": {
+      "id": "minecraft:lapis_lazuli"
+    },
+    "title": {
+      "translate": "advancements.meridian_progression.cultivation.first_meridian.title"
+    },
+    "description": {
+      "translate": "advancements.meridian_progression.cultivation.first_meridian.description"
+    }
+  },
+  "criteria": {
+    "reached": {
+      "trigger": "meridian_human_host:cultivation_state",
+      "conditions": {
+        "opened_meridians": {
+          "min": 1
+        }
+      }
+    }
+  },
+  "requirements": [
+    [
+      "reached"
+    ]
+  ]
+}

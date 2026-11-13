@@ -1,0 +1,33 @@
+{
+  "parent": "meridian_progression:cultivation/notes",
+  "display": {
+    "icon": {
+      "id": "meridian_progression:gathering_scroll"
+    },
+    "title": {
+      "translate": "advancements.meridian_progression.cultivation.gathering.title"
+    },
+    "description": {
+      "translate": "advancements.meridian_progression.cultivation.gathering.description"
+    }
+  },
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "meridian_progression:gathering_scroll"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

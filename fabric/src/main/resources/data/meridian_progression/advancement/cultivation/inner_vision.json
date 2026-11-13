@@ -1,0 +1,33 @@
+{
+  "parent": "meridian_progression:cultivation/notes",
+  "display": {
+    "icon": {
+      "id": "meridian_progression:inner_vision_scroll"
+    },
+    "title": {
+      "translate": "advancements.meridian_progression.cultivation.inner_vision.title"
+    },
+    "description": {
+      "translate": "advancements.meridian_progression.cultivation.inner_vision.description"
+    }
+  },
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "meridian_progression:inner_vision_scroll"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

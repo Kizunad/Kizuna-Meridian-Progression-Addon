@@ -1,0 +1,26 @@
+{
+  "display": {
+    "icon": {
+      "id": "meridian_progression:fragment_scroll"
+    },
+    "title": {
+      "translate": "advancements.meridian_progression.cultivation.root.title"
+    },
+    "description": {
+      "translate": "advancements.meridian_progression.cultivation.root.description"
+    },
+    "background": "minecraft:gui/advancements/backgrounds/stone",
+    "show_toast": false,
+    "announce_to_chat": false
+  },
+  "criteria": {
+    "tick": {
+      "trigger": "minecraft:tick"
+    }
+  },
+  "requirements": [
+    [
+      "tick"
+    ]
+  ]
+}

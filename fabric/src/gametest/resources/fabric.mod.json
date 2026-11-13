@@ -5,6 +5,7 @@
   "environment": "server",
   "entrypoints": {"fabric-gametest": [
     "dev.kizuna.meridian.progression.fabric.ProgressionGameTest",
-    "dev.kizuna.meridian.progression.fabric.ProgressionCreativeGameTest"
+    "dev.kizuna.meridian.progression.fabric.ProgressionCreativeGameTest",
+    "dev.kizuna.meridian.progression.fabric.ProgressionAdvancementGameTest"
   ]}
 }

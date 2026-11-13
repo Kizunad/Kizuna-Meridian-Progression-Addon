@@ -1,0 +1,27 @@
+{
+  "parent": "meridian_progression:cultivation/first_meridian",
+  "display": {
+    "icon": {
+      "id": "minecraft:heart_of_the_sea"
+    },
+    "title": {
+      "translate": "advancements.meridian_progression.cultivation.eight_meridians.title"
+    },
+    "description": {
+      "translate": "advancements.meridian_progression.cultivation.eight_meridians.description"
+    }
+  },
+  "criteria": {
+    "reached": {
+      "trigger": "meridian_human_host:cultivation_state",
+      "conditions": {
+        "foundation": true
+      }
+    }
+  },
+  "requirements": [
+    [
+      "reached"
+    ]
+  ]
+}

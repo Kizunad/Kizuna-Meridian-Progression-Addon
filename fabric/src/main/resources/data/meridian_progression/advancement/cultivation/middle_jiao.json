@@ -1,0 +1,33 @@
+{
+  "parent": "meridian_progression:cultivation/notes",
+  "display": {
+    "icon": {
+      "id": "meridian_progression:middle_jiao_scroll"
+    },
+    "title": {
+      "translate": "advancements.meridian_progression.cultivation.middle_jiao.title"
+    },
+    "description": {
+      "translate": "advancements.meridian_progression.cultivation.middle_jiao.description"
+    }
+  },
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "meridian_progression:middle_jiao_scroll"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

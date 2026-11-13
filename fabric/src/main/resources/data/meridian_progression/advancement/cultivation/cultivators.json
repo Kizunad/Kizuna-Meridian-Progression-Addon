@@ -1,0 +1,85 @@
+{
+  "parent": "meridian_progression:cultivation/root",
+  "display": {
+    "icon": {
+      "id": "minecraft:iron_sword"
+    },
+    "title": {
+      "translate": "advancements.meridian_progression.cultivation.cultivators.title"
+    },
+    "description": {
+      "translate": "advancements.meridian_progression.cultivation.cultivators.description"
+    }
+  },
+  "criteria": {
+    "hurt": {
+      "trigger": "minecraft:player_hurt_entity",
+      "conditions": {
+        "entity": [
+          {
+            "condition": "minecraft:entity_properties",
+            "entity": "this",
+            "predicate": {
+              "minecraft:entity_type": [
+                "minecraft:villager",
+                "minecraft:wandering_trader",
+                "minecraft:pillager",
+                "minecraft:vindicator",
+                "minecraft:evoker",
+                "minecraft:witch",
+                "minecraft:illusioner"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "hurt_by": {
+      "trigger": "minecraft:entity_hurt_player",
+      "conditions": {
+        "damage": {
+          "source_entity": {
+            "minecraft:entity_type": [
+              "minecraft:villager",
+              "minecraft:wandering_trader",
+              "minecraft:pillager",
+              "minecraft:vindicator",
+              "minecraft:evoker",
+              "minecraft:witch",
+              "minecraft:illusioner"
+            ]
+          }
+        }
+      }
+    },
+    "traded": {
+      "trigger": "minecraft:villager_trade",
+      "conditions": {
+        "villager": [
+          {
+            "condition": "minecraft:entity_properties",
+            "entity": "this",
+            "predicate": {
+              "minecraft:entity_type": [
+                "minecraft:villager",
+                "minecraft:wandering_trader",
+                "minecraft:pillager",
+                "minecraft:vindicator",
+                "minecraft:evoker",
+                "minecraft:witch",
+                "minecraft:illusioner"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "hurt",
+      "hurt_by",
+      "traded"
+    ]
+  ]
+}

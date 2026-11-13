@@ -1,0 +1,28 @@
+{
+  "parent": "meridian_progression:cultivation/eight_meridians",
+  "display": {
+    "icon": {
+      "id": "minecraft:nether_star"
+    },
+    "title": {
+      "translate": "advancements.meridian_progression.cultivation.true_qi.title"
+    },
+    "description": {
+      "translate": "advancements.meridian_progression.cultivation.true_qi.description"
+    },
+    "frame": "goal"
+  },
+  "criteria": {
+    "reached": {
+      "trigger": "meridian_human_host:cultivation_state",
+      "conditions": {
+        "realm": "true_qi"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "reached"
+    ]
+  ]
+}
