@@ -8,7 +8,17 @@
 - 具体物品放本仓库，通过 Items 的零消费登记与 BS3D ItemMetadata 接入。经用户确认，阅读右键核对登记后由可信宿主启动，不走 ItemUseService 联合消费事务。
 - 跨端与持久化使用 protoc 生成的 Protobuf；网络复用 Inventory UI Framework 统一模块路由，不注册平行网络通道。客户端不得依赖服务端实现，服务端不得引用客户端或渲染类。
 - 所有进度修改、阅读会话及实体操作在服务端主线程串行执行；客户端不提交时间、物品 NBT 或解锁值。正文标记与模糊位置保持设计稿原样。
-- 文档唯一编辑来源为 `docs/wiki/`，README 只作入口。行为变化同步更新文档；交付运行本仓库构建、必要整体回归和文档检查，区分编译验证与游戏验证。
+- 文档唯一编辑来源为 `docs/wiki/`，README 只作入口。行为变化同步更新文档；交付运行必要整体回归和文档检查，区分编译验证与游戏验证。
 - 跨仓接线记录在 `docs/wiki/Integration.md`；修改公开接线时同步更新实际依赖、完整装配和回归，不以清单代替实现。
 - 使用 patch/Edit 修改文件，命令路径加双引号，保留其他工作。未经授权不提交、推送或建远程；生成文件、缓存和运行目录不纳入 Git。
 - 原创代码、正文接入与文档采用 PolyForm Noncommercial 1.0.0；第三方材料保留其原有许可与来源。
+
+## 构建和测试
+
+构建、测试一律走工作区的 `kz`（`~/Code/Kizuna-remote-session/scripts/kz`），不直接运行 `./gradlew`。细则以 `~/Code/Kizuna-remote-session/handoff/codex-worker-rules.md` 为准，动手前先读。
+
+- 单测、构建和服务端 GameTest：`kz test ~/Code/<本仓的 worktree>`
+- 要带上别的仓的 worktree 一起测：每个加一次 `--with ~/Code/<那个仓的 worktree>`
+- 客户端测试：`kz client ~/Code/<本仓的 worktree>` 列出有哪些项，`kz client ~/Code/<本仓的 worktree> <项>` 跑其中一项
+- 要自己写 Gradle 参数时：`kz gradle ~/Code/<本仓的 worktree> -- <参数>`
+- 不提交、不推送；在自己的 worktree（`~/Code/wt-*`）里改，不改主目录。
