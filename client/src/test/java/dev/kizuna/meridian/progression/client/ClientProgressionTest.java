@@ -41,4 +41,21 @@ public final class ClientProgressionTest {
         ClientProgression.clear();
         assertFalse(ClientProgression.canInspect());
     }
+
+    @Test
+    public void basicBreathingGrantOpensOnlyBreathingAccess() {
+        // 出身授权只开放吐纳，不代读残卷或开放其余修炼能力。
+        var reborn = PlayerProgress.newBuilder()
+                .setSchemaVersion(ProgressionProtocol.PROGRESS_SCHEMA)
+                .setBasicBreathingGranted(true /* value */)
+                .build();
+        ClientProgression.accept(reborn);
+        assertTrue(ClientProgression.canGather());
+        assertFalse(ClientProgression.canGatherDetails());
+        assertFalse(ClientProgression.canCultivate());
+        assertFalse(ClientProgression.canInspect());
+        assertFalse(ClientProgression.canUseMiddleJiao());
+        ClientProgression.clear();
+        assertFalse(ClientProgression.canGather());
+    }
 }

@@ -6,7 +6,7 @@
 
 | 契约 | 用途 |
 |---|---|
-| PlayerProgress | 身体内持久进度：schema_version=1，qi_notes_read=2、gathering_scroll_read=3、middle_jiao_scroll_read=4、inner_vision_scroll_read=5、true_qi_scroll_read=6 五个独立字段；真实右键即授予 |
+| PlayerProgress | 身体内持久进度：schema_version=1，qi_notes_read=2、gathering_scroll_read=3、middle_jiao_scroll_read=4、inner_vision_scroll_read=5、true_qi_scroll_read=6 五个独立字段；真实右键即授予。`basic_breathing_granted=7` 只表示 Human 当前在线出身投影，不写入身体存档 |
 | ReadingIntent | finished / cancelled / synchronize 互斥意图；客户端不提交时长或解锁值 |
 | OpenScroll | 服务器随机会话 UUID、正文 SHA-256、scroll 卷种；卷种由真实物品决定 |
 | ReadingOutcome | 播放完成 COMPLETED=8、凭据无效、取消或操作不允许；结果带服务端凭据绑定的 scroll。旧 TOO_EARLY=3 弃用保留编号 |
@@ -28,6 +28,8 @@
 
 `ScrollKind.TRUE_QI=5` 与 `PlayerProgress.true_qi_scroll_read=6` 同为追加字段，仍是 schema 1；旧存档缺少字段 6 解码为 false。这一卷只记读过，Human 不据它放开任何操作。
 
+`PlayerProgress.basic_breathing_granted=7` 是 Human 按当前在线出身投影的基础吐纳授权。它随进度同步发送给客户端，身体写入时必须清除；旧存档缺少字段 7 时解码为 false。该授权只开放基础吐纳，不代读札记或聚气残卷，也不开放环境详情、开脉、中焦或内观。
+
 ## 身体接口
 
 本仓库公开 [ProgressionStore](../../server/src/main/java/dev/kizuna/meridian/progression/server/ProgressionStore.java)：
@@ -45,6 +47,8 @@
 4. Human 开脉要求 qi_notes_read；内观另要求 inner_vision_scroll_read；聚气另要求 gathering_scroll_read；中焦操作另要求 middle_jiao_scroll_read。普通手动及自动请求均检查身体进度，OP 调试仍走独立权限入口。重置内观仅撤销检视订阅并关窗，不中断其他卷的修炼；重置主动修炼权限按原规则归还在途并释放占用。
 
 客户端通过 ClientProgression.synchronizedWithServer() 判断是否收到当前连接的权威进度，通过 requireProgress() 读取不可变 Protobuf 投影。UI 同步前隐藏相关入口，收到 progress 再刷新；断线清空投影。该客户端值不能代替服务端操作拦截。
+
+`ClientProgression.canGather()` 同时接受完整阅读权限和 `basic_breathing_granted`，供基础吐纳入口使用。`canGatherDetails()` 仍只接受札记与聚气残卷，环境详情入口不能因出身授权开放。
 
 `ClientProgression.canInspect()` 与 `ProgressionFabric.canInspect(player)` 均要求札记和内观卷。检视入口保持可见，未获授权时只显示 LockedNotice；订阅服务端再校验身体归属与这两个已读位。
 

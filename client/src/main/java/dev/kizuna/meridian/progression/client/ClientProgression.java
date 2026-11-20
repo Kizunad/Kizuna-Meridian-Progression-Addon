@@ -40,7 +40,12 @@ public final class ClientProgression {
         }
     }
     public static boolean canGather() {
-        // 聚气卷独立保存，入口仍位于札记解锁的修炼页。
+        // 吐纳可由两卷阅读授权，或 Human 投影的当前出身授权开放。
+        return canGatherDetails() || progress != null && progress.getBasicBreathingGranted();
+    }
+
+    public static boolean canGatherDetails() {
+        // 环境详情仍要求修炼页与聚气卷，不随出身授权开放。
         return canCultivate() && progress.getGatheringScrollRead();
     }
 

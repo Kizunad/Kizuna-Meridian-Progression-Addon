@@ -11,6 +11,7 @@ message PlayerProgress {
   bool middle_jiao_scroll_read = 4;
   bool inner_vision_scroll_read = 5;
   bool true_qi_scroll_read = 6; // 只记读过，不开任何能力。
+  bool basic_breathing_granted = 7; // Human 按当前出身投影的基础吐纳授权，不代表读过残卷。
 }
 
 // 每卷独立记入身体；客户端不能通过完成意图指定要解锁的卷。

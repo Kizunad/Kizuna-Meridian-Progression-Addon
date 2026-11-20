@@ -17,8 +17,8 @@ Progression 当前提供 `installStore`、`publishProgress`、`canCultivate`、`
 
 ## 客户端 UI
 
-- [x] **UI**：使用 `ClientProgression`，主动修炼入口由 `featureAccess` 校验；检视入口始终可见，工厂用 `canInspect()` 返回锁定通知或真实面板。进度变化关闭旧状态窗口，重置立即释放检视并发送撤订阅。断线清空投影，释放在客户端线程执行。
-- [x] **Human-UI**：通过必装场景接口提供中焦标题和锁定提示；独立 `meridian_ui:practice` 弹窗，读取同一权威进度。普通经脉内观保留选脉与开脉。
+- [x] **UI**：使用 `ClientProgression`，基础吐纳入口由 `canGather()` 校验，接受完整阅读权限或 Human 当前出身投影；环境详情入口用 `canGatherDetails()`，仍要求札记与聚气残卷。检视入口始终可见，工厂用 `canInspect()` 返回锁定通知或真实面板。进度变化关闭旧状态窗口，重置立即释放检视并发送撤订阅。断线清空投影，释放在客户端线程执行。
+- [x] **Human-UI**：通过必装场景接口提供中焦标题和锁定提示；独立 `meridian_ui:practice` 弹窗，读取同一权威进度。基础吐纳可由 Human 出身投影开放，环境详情、普通经脉内观与开脉仍保留各自阅读条件。
 - [x] **依赖声明**：Human 强制依赖 Progression common，UI/Human-UI 强制依赖 Progression client；Framework 客户端库保持内容无关。
 
 服务器在真实右键时写入对应身体字段并立即同步，首次 `OpenedScroll.result=UNLOCKED` 才提示对应功能；播放无需完成，Esc 保留进度。finished 仅返回 `COMPLETED`，不得重新写入权限。实际权限来自身体，不从提示文本推断。
