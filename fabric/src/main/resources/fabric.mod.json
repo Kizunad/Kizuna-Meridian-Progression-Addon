@@ -9,6 +9,7 @@
   "environment": "*",
   "entrypoints": {
     "main": ["dev.kizuna.meridian.progression.fabric.ProgressionFabric"],
+    "meridian_human_progression": ["dev.kizuna.meridian.progression.fabric.ProgressionFabric"],
     "kizuna_inventory_ui_server": ["dev.kizuna.meridian.progression.fabric.ProgressionFabric"]
   },
   "mixins": ["meridian_progression.mixins.json"],

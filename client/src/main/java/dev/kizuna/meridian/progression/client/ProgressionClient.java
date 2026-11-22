@@ -4,15 +4,17 @@ import dev.kizuna.inventoryui.client.*;
 import dev.kizuna.inventoryui.protocol.UiMessageRouter;
 import dev.kizuna.inventoryui.protocol.UiWire;
 import dev.kizuna.inventoryui.registry.FrameworkCatalog;
+import dev.kizuna.meridian.human.client.HumanProgressionClient;
 import dev.kizuna.meridian.progression.ProgressionProtocol;
 import dev.kizuna.meridian.progression.ScrollContent;
 import dev.kizuna.meridian.progression.pb.ProgressionMessages.*;
+import dev.kizuna.meridian.progression.pb.ProgressionMessages.PlayerProgress;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 
 /** 不登记额外通道或修炼页，只接入框架的必需消息模块和残卷过场。 */
-public final class ProgressionClient implements ClientModule {
+public final class ProgressionClient implements ClientModule, HumanProgressionClient {
     private ClientRuntime runtime;
     private long generation;
 
@@ -49,6 +51,41 @@ public final class ProgressionClient implements ClientModule {
         if (client.gui.screen() instanceof ScrollScreen screen) {
             screen.dismiss();
         }
+    }
+
+    @Override
+    public boolean synchronizedWithServer() {
+        return ClientProgression.synchronizedWithServer();
+    }
+
+    @Override
+    public PlayerProgress requireProgress() {
+        return ClientProgression.requireProgress();
+    }
+
+    @Override
+    public boolean canCultivate() {
+        return ClientProgression.canCultivate();
+    }
+
+    @Override
+    public boolean canGather() {
+        return ClientProgression.canGather();
+    }
+
+    @Override
+    public boolean canGatherDetails() {
+        return ClientProgression.canGatherDetails();
+    }
+
+    @Override
+    public boolean canInspect() {
+        return ClientProgression.canInspect();
+    }
+
+    @Override
+    public boolean canUseMiddleJiao() {
+        return ClientProgression.canUseMiddleJiao();
     }
 
     private void receive(ProgressionEvent event) {

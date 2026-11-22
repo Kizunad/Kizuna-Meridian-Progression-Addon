@@ -1,6 +1,7 @@
 package dev.kizuna.meridian.progression.client;
 
 import dev.kizuna.meridian.progression.ProgressionProtocol;
+import dev.kizuna.meridian.human.protocol.HumanProgressionProtocol;
 import dev.kizuna.meridian.progression.pb.ProgressionMessages.PlayerProgress;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +14,7 @@ public final class ClientProgression {
 
     static void accept(PlayerProgress value) {
         // 权威投影替换后立即通知窗口，重置不能等待下一次菜单刷新。
-        if (value.getSchemaVersion() != ProgressionProtocol.PROGRESS_SCHEMA) {
+        if (value.getSchemaVersion() != HumanProgressionProtocol.PROGRESS_SCHEMA) {
             throw new IllegalArgumentException("不支持的修炼进度版本");
         }
         progress = value;

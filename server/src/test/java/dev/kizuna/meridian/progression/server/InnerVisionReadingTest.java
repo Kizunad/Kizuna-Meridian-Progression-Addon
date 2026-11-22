@@ -2,11 +2,13 @@ package dev.kizuna.meridian.progression.server;
 
 import dev.kizuna.meridian.progression.ProgressionProtocol;
 import dev.kizuna.meridian.progression.ScrollContent;
-import dev.kizuna.meridian.progression.pb.ProgressionMessages.Finished;
 import dev.kizuna.meridian.progression.pb.ProgressionMessages.PlayerProgress;
+import dev.kizuna.meridian.progression.pb.ProgressionMessages.Finished;
 import dev.kizuna.meridian.progression.pb.ProgressionMessages.ReadingIntent;
 import dev.kizuna.meridian.progression.pb.ProgressionMessages.ReadingResult;
 import dev.kizuna.meridian.progression.pb.ProgressionMessages.ScrollKind;
+import dev.kizuna.meridian.human.protocol.HumanProgressionProtocol;
+import dev.kizuna.meridian.human.protocol.ProgressionStore;
 import dev.kizuna.meridian.progression.server.ReadingService.ProgressChange;
 import org.junit.Test;
 
@@ -22,7 +24,7 @@ public final class InnerVisionReadingTest {
     private static final byte[] LEGACY_THREE_SCROLLS = {8, 1, 16, 1, 24, 1, 32, 1};
     private final UUID player = UUID.randomUUID();
     private PlayerProgress saved = PlayerProgress.newBuilder()
-            .setSchemaVersion(ProgressionProtocol.PROGRESS_SCHEMA)
+            .setSchemaVersion(HumanProgressionProtocol.PROGRESS_SCHEMA)
             .build();
 
     @Test
@@ -62,7 +64,7 @@ public final class InnerVisionReadingTest {
     public void oldThreeScrollBytesDecodeAsUnreadAndCanBeUpgraded() throws Exception {
         // 固定旧 wire 字节没有字段 5；加载不升级版本，也不凭其他三卷授予内观。
         saved = PlayerProgress.parseFrom(LEGACY_THREE_SCROLLS);
-        assertEquals(ProgressionProtocol.PROGRESS_SCHEMA, saved.getSchemaVersion());
+        assertEquals(HumanProgressionProtocol.PROGRESS_SCHEMA, saved.getSchemaVersion());
         assertFalse(saved.getInnerVisionScrollRead());
         var service = service();
         assertEquals(ReadingResult.UNLOCKED, service.open(player, CONNECTION, ScrollKind.INNER_VISION).result());

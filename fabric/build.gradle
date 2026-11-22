@@ -14,6 +14,7 @@ dependencies {
     compileOnly 'local.meridian:server'
     // /meridian 指令统一注册点（Framework 的 Fabric 模组 meridian_framework），组合 Framework 时自动替换为源码工程。
     compileOnly 'dev.kizuna.meridian:fabric'
+    compileOnly 'dev.kizuna.meridian.human:fabric'
     // Items 是必需宿主库，没有独立模组 ID；安装产物内嵌一次。
     include 'dev.kizuna.meridian.items:kizuna-meridian-items-addon'
     implementation project(':server')

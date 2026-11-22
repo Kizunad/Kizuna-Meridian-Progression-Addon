@@ -1,6 +1,7 @@
 package dev.kizuna.meridian.progression.client;
 
 import dev.kizuna.meridian.progression.ProgressionProtocol;
+import dev.kizuna.meridian.human.protocol.HumanProgressionProtocol;
 import dev.kizuna.meridian.progression.pb.ProgressionMessages.PlayerProgress;
 import org.junit.After;
 import org.junit.Test;
@@ -22,7 +23,7 @@ public final class ClientProgressionTest {
         ClientProgression.clear();
         assertFalse(ClientProgression.canInspect());
         var innerOnly = PlayerProgress.newBuilder()
-                .setSchemaVersion(ProgressionProtocol.PROGRESS_SCHEMA)
+                .setSchemaVersion(HumanProgressionProtocol.PROGRESS_SCHEMA)
                 .setInnerVisionScrollRead(true /* value */)
                 .build();
         ClientProgression.accept(innerOnly);
@@ -46,7 +47,7 @@ public final class ClientProgressionTest {
     public void basicBreathingGrantOpensOnlyBreathingAccess() {
         // 出身授权只开放吐纳，不代读残卷或开放其余修炼能力。
         var reborn = PlayerProgress.newBuilder()
-                .setSchemaVersion(ProgressionProtocol.PROGRESS_SCHEMA)
+                .setSchemaVersion(HumanProgressionProtocol.PROGRESS_SCHEMA)
                 .setBasicBreathingGranted(true /* value */)
                 .build();
         ClientProgression.accept(reborn);

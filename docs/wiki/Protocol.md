@@ -1,6 +1,6 @@
 # 阅读协议与身体宿主
 
-唯一协议为 [progression.proto](../../shared/src/main/proto/kizuna/meridian/progression/v1/progression.proto)，使用 protoc 4.36.2 生成 Java 与描述集，不维护平行 JSON 或手写消息。
+唯一协议由 Human shared 的 `shared/src/main/proto/kizuna/meridian/progression/v1/progression.proto` 提供，使用 protoc 4.36.2 生成 `ProgressionMessages` Java 类与描述集。Progression 只依赖该生成契约，不维护平行 JSON、手写消息或第二份 proto。
 
 ## 消息
 
@@ -32,7 +32,7 @@
 
 ## 身体接口
 
-本仓库公开 [ProgressionStore](../../server/src/main/java/dev/kizuna/meridian/progression/server/ProgressionStore.java)：
+Human shared 模块公开 `ProgressionStore` 身体宿主契约：
 
 - read(UUID) 读取当前玩家身体中的 PlayerProgress；新身体返回版本 1、未读。
 - write(UUID, PlayerProgress) 在身体权威事务中原子写入、保留其他身体状态并标脏，随身体存档。异常不能留下部分变更。

@@ -2,8 +2,10 @@ package dev.kizuna.meridian.progression.server;
 
 import dev.kizuna.meridian.progression.ProgressionProtocol;
 import dev.kizuna.meridian.progression.ScrollContent;
-import dev.kizuna.meridian.progression.pb.ProgressionMessages.OpenScroll;
+import dev.kizuna.meridian.human.protocol.HumanProgressionProtocol;
+import dev.kizuna.meridian.human.protocol.ProgressionStore;
 import dev.kizuna.meridian.progression.pb.ProgressionMessages.PlayerProgress;
+import dev.kizuna.meridian.progression.pb.ProgressionMessages.OpenScroll;
 import dev.kizuna.meridian.progression.pb.ProgressionMessages.ReadingIntent;
 import dev.kizuna.meridian.progression.pb.ProgressionMessages.ReadingOutcome;
 import dev.kizuna.meridian.progression.pb.ProgressionMessages.ReadingResult;
@@ -95,7 +97,7 @@ public final class ReadingService {
             throw new IllegalStateException("身体进度宿主尚未接线");
         }
         var value = Objects.requireNonNull(store.read(player));
-        if (value.getSchemaVersion() != ProgressionProtocol.PROGRESS_SCHEMA) {
+        if (value.getSchemaVersion() != HumanProgressionProtocol.PROGRESS_SCHEMA) {
             throw new IllegalStateException("不支持的身体进度版本：" + value.getSchemaVersion());
         }
         return value;

@@ -9,13 +9,14 @@ import dev.kizuna.inventoryui.server.fabric.FabricServerModule;
 import dev.kizuna.inventoryui.protocol.pb.WireProtocol.Capability;
 import dev.kizuna.inventoryui.protocol.pb.WireProtocol.Direction;
 import dev.kizuna.meridian.fabric.MeridianCommands;
+import dev.kizuna.meridian.human.fabric.HumanProgressionHost;
+import dev.kizuna.meridian.human.protocol.ProgressionStore;
 import dev.kizuna.meridian.progression.ProgressionProtocol;
+import dev.kizuna.meridian.progression.pb.ProgressionMessages.ProgressionEvent;
 import dev.kizuna.meridian.progression.pb.ProgressionMessages.ReadingIntent;
 import dev.kizuna.meridian.progression.pb.ProgressionMessages.ReadingOutcome;
 import dev.kizuna.meridian.progression.pb.ProgressionMessages.ReadingResult;
-import dev.kizuna.meridian.progression.pb.ProgressionMessages.ProgressionEvent;
 import dev.kizuna.meridian.progression.pb.ProgressionMessages.ScrollKind;
-import dev.kizuna.meridian.progression.server.ProgressionStore;
 import dev.kizuna.meridian.progression.server.ReadingService;
 import dev.kizuna.meridian.progression.server.ReadingService.ProgressChange;
 import net.fabricmc.api.ModInitializer;
@@ -38,7 +39,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /** 物品和协议的服务端宿主；身体保存与修炼拦截由协作清单中的必需接线完成。 */
-public final class ProgressionFabric implements ModInitializer, FabricServerModule {
+public final class ProgressionFabric implements ModInitializer, FabricServerModule, HumanProgressionHost {
     private static final Map<MinecraftServer, Runtime> RUNTIMES = new IdentityHashMap<>();
     private static final int OP_PERMISSION_LEVEL = 2;
 
@@ -133,12 +134,14 @@ public final class ProgressionFabric implements ModInitializer, FabricServerModu
     }
 
     /** Human 在 SERVER_STARTING 的主线程安装身体进度适配器；可早于模块登记。 */
-    public static void installStore(MinecraftServer server, ProgressionStore store) {
+    @Override
+    public void installStore(MinecraftServer server, ProgressionStore store) {
         runtime(server).service.installStore(store);
     }
 
     /** 身体加载、重生或更改后由 Human 调用；未就绪连接在握手后主动请求同步。 */
-    public static void publishProgress(ServerPlayer player) {
+    @Override
+    public void publishProgress(ServerPlayer player) {
         for (var session : List.copyOf(runtime(player.level().getServer()).sessions)) {
             if (session.belongsTo(player)) {
                 session.synchronize();
@@ -151,7 +154,8 @@ public final class ProgressionFabric implements ModInitializer, FabricServerModu
         return runtime(player.level().getServer()).service.progress(player.getUUID()).getQiNotesRead();
     }
 
-    public static boolean canInspect(ServerPlayer player) {
+    @Override
+    public boolean canInspect(ServerPlayer player) {
         // 修炼页与内观卷同时授权，和身体订阅及客户端展示采用同一语义。
         var progress = runtime(player.level().getServer()).service.progress(player.getUUID());
         return progress.getQiNotesRead() && progress.getInnerVisionScrollRead();

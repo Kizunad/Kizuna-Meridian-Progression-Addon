@@ -12,6 +12,7 @@ dependencies {
     // 本模块不直接调用 owo，但 javac 须看得到该接口。
     compileOnly libs.owo
     implementation project(':shared')
+    implementation 'dev.kizuna.meridian.human:client'
     testImplementation libs.junit4
 }
 test { useJUnit() }

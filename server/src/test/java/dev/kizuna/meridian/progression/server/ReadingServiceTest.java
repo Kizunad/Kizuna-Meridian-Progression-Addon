@@ -3,6 +3,8 @@ package dev.kizuna.meridian.progression.server;
 import dev.kizuna.meridian.progression.ScrollContent;
 import dev.kizuna.meridian.progression.ScrollPlayback;
 import dev.kizuna.meridian.progression.pb.ProgressionMessages.*;
+import dev.kizuna.meridian.progression.pb.ProgressionMessages.PlayerProgress;
+import dev.kizuna.meridian.human.protocol.ProgressionStore;
 import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
