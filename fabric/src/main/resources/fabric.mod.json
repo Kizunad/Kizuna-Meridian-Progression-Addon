@@ -3,7 +3,13 @@
   "id": "meridian_progression",
   "version": "${version}",
   "name": "Kizuna's Meridian Progression Addon",
-  "description": "单机修炼流程：残卷《炁脉札记》与身体进度宿主",
+  "contact": {
+    "homepage": "https://github.com/Kizunad/Kizuna-Meridian-Progression-Addon",
+    "sources": "https://github.com/Kizunad/Kizuna-Meridian-Progression-Addon",
+    "issues": "https://github.com/Kizunad/Kizuna-Meridian-Progression-Addon/issues"
+  },
+  "icon": "assets/meridian_progression/icon.png",
+  "description": "Follow the fragments of the Qi and Meridians journal as your character develops.\n循着《炁脉札记》的残卷修炼，逐步推进身体进境。",
   "authors": ["Kizunad"],
   "license": "PolyForm-Noncommercial-1.0.0",
   "environment": "*",

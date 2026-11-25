@@ -3,7 +3,13 @@
   "id": "meridian_progression_client",
   "version": "${version}",
   "name": "Kizuna's Meridian Progression Addon - Client",
-  "description": "残卷手卷播放与权威修炼进度投影",
+  "contact": {
+    "homepage": "https://github.com/Kizunad/Kizuna-Meridian-Progression-Addon",
+    "sources": "https://github.com/Kizunad/Kizuna-Meridian-Progression-Addon",
+    "issues": "https://github.com/Kizunad/Kizuna-Meridian-Progression-Addon/issues"
+  },
+  "icon": "assets/meridian_progression_client/icon.png",
+  "description": "Open the Qi and Meridians journal to read its scrolls and follow your cultivation progress.\n展开《炁脉札记》的手卷，查看当前修炼进度。",
   "authors": ["Kizunad"],
   "license": "PolyForm-Noncommercial-1.0.0",
   "environment": "client",
